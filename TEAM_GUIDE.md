@@ -28,6 +28,40 @@ Your job is to read the `MarketState` being emitted by Person 1 every 5 seconds,
    ```
 4. Build `packages/agents/execution/`. Listen for `risk:decision`. If `decision.approved` is true, use `viem` to submit a `swapExactTokensForTokens` transaction to the PancakeSwap V3 Router on BSC Testnet.
 
+### Person 2 Status Update
+
+Person 2 implementation is complete and committed in:
+
+- `packages/agents/strategy/`
+   - `src/arbitrage_detector.ts`
+   - `src/signal_builder.ts`
+   - `src/index.ts`
+
+- `packages/agents/execution/`
+   - `src/router.ts`
+   - `src/gas_estimator.ts`
+   - `src/index.ts`
+
+Execution flow now implemented:
+
+1. `market:update` -> Strategy agent computes cross-pool opportunities and emits one `strategy:signal`.
+2. `risk:decision` -> Execution agent executes approved signals through PancakeSwap V3 router.
+3. Execution agent emits `execution:trade` with tx hash and P&L fields.
+
+Notes for Person 3 integration:
+
+- You can now consume `strategy:signal` and emit `risk:decision` directly without additional Person 2 changes.
+- Use `signal.id` as the join key across your risk logs and downstream UI metrics.
+- If you deny a signal, include `reason` to improve observability in execution logs.
+
+Recommended local run order for Person 3 integration testing:
+
+1. Start Market Intelligence: `npm run start --workspace=@pancakeswap-agent/market-intelligence`
+2. Start Strategy Agent: `npm run start --workspace=@pancakeswap-agent/strategy`
+3. Start Risk Agent (Person 3): emit `risk:decision` for incoming `strategy:signal`
+4. Start Execution Agent: `npm run start --workspace=@pancakeswap-agent/execution`
+5. Subscribe dashboard/backend to `execution:trade` for real-time P&L views
+
 ---
 
 ## Instructions for Person 3 (Risk & Dashboard)

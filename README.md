@@ -93,8 +93,36 @@ You can run individual agents using npm workspaces from the root:
 # Run Market Intelligence Agent (Person 1)
 npm run start --workspace=@pancakeswap-agent/market-intelligence
 
+# Run Strategy Agent (Person 2)
+npm run start --workspace=@pancakeswap-agent/strategy
+
+# Run Execution Agent (Person 2)
+npm run start --workspace=@pancakeswap-agent/execution
+
 # Run Dashboard (Person 3)
 npm run dev --workspace=@pancakeswap-agent/dashboard
+```
+
+## Person 2 Delivery (Strategy + Execution)
+
+Person 2 implementation now includes:
+
+- `@pancakeswap-agent/strategy`
+   - `arbitrage_detector.ts`: Pairwise cross-pool discrepancy detection and estimated profit ranking.
+   - `signal_builder.ts`: Regime-aware sizing + confidence mapping into `TradeSignal`.
+   - `index.ts`: Subscribes to `market:update` and emits best `strategy:signal` each cycle.
+
+- `@pancakeswap-agent/execution`
+   - `router.ts`: PancakeSwap V3 `exactInputSingle` transaction submission via `viem` on BSC Testnet.
+   - `gas_estimator.ts`: Gas cost estimation helpers.
+   - `index.ts`: Caches signals, executes approved risk decisions, and emits `execution:trade`.
+
+Additional environment variables used by Person 2 agents:
+
+```text
+RPC_URL_BSC=https://bsc-testnet-rpc-url
+PRIVATE_KEY=0x<64-hex-private-key>
+WALLET_ADDRESS=0x<recipient-wallet-address>
 ```
 
 ## Development Rules
@@ -113,6 +141,7 @@ Review [**TEAM_GUIDE.md**](./TEAM_GUIDE.md) for concrete steps on how Person 2 a
 - [ ] Repository Scaffolded
 - [ ] Core Interfaces Defined
 - [ ] P1: Market Intelligence Agent (Live pool queries)
-- [ ] P2: Execution Router logic
+- [x] P2: Strategy Agent (arbitrage signal emission)
+- [x] P2: Execution Router logic
 - [ ] P3: Risk Middleware
 - [ ] P3: WebSocket Dashboard
