@@ -1,0 +1,13 @@
+{
+  "name": "@pancakeswap-agent/liquidity",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "test": "node src/test_il.js"
+  },
+  "dependencies": {
+    "@pancakeswap-agent/core": "*"
+  }
+}
