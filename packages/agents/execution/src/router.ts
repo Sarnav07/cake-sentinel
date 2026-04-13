@@ -17,6 +17,7 @@ export const PANCAKESWAP_V3_ROUTER_ABI = [
           { name: 'tokenOut', type: 'address' },
           { name: 'fee', type: 'uint24' },
           { name: 'recipient', type: 'address' },
+          { name: 'deadline', type: 'uint256' },
           { name: 'amountIn', type: 'uint256' },
           { name: 'amountOutMinimum', type: 'uint256' },
           { name: 'sqrtPriceLimitX96', type: 'uint160' },
@@ -33,10 +34,10 @@ export interface SwapParams {
   tokenIn: string;
   tokenOut: string;
   fee: number;
+  deadline: number;
   amountIn: bigint;
   amountOutMinimum: bigint;
   recipient: string;
-  deadline: number;
 }
 
 const envSchema = z.object({
@@ -92,6 +93,7 @@ export async function executeSwap(params: SwapParams): Promise<string> {
           tokenOut: parsedParams.tokenOut as `0x${string}`,
           fee: parsedParams.fee,
           recipient: parsedParams.recipient as `0x${string}`,
+            deadline: BigInt(parsedParams.deadline),
           amountIn: parsedParams.amountIn,
           amountOutMinimum: parsedParams.amountOutMinimum,
           sqrtPriceLimitX96: 0n,

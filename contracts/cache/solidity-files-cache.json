@@ -1,0 +1,113 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/aradhya/Desktop/cake-sentinel/contracts/src/AgentLeaderboard.sol": {
+      "lastModificationDate": 1776033593794,
+      "contentHash": "7eef74322ad3e9c5da799ba52b50df74",
+      "sourceName": "src/AgentLeaderboard.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "AgentLeaderboard"
+      ]
+    },
+    "/Users/aradhya/Desktop/cake-sentinel/contracts/src/NexusVault.sol": {
+      "lastModificationDate": 1776033593791,
+      "contentHash": "081c6ee0a4aa35dcb35bc276258b191b",
+      "sourceName": "src/NexusVault.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "NexusVault"
+      ]
+    },
+    "/Users/aradhya/Desktop/cake-sentinel/contracts/src/SignalRegistry.sol": {
+      "lastModificationDate": 1776033593794,
+      "contentHash": "d3e0f0d1a1acf68a8f2a68da40382e42",
+      "sourceName": "src/SignalRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SignalRegistry"
+      ]
+    }
+  }
+}

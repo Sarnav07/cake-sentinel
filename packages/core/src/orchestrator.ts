@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { MarketState, TradeSignal, RiskDecision, TradeEvent } from './types';
+import { AgentStatus, MarketState, PortfolioSnapshot, TradeSignal, RiskDecision, TradeEvent } from './types';
 
 // Define the strict event map
 export interface AgentEvents {
@@ -7,6 +7,9 @@ export interface AgentEvents {
   'strategy:signal': (signal: TradeSignal) => void;
   'risk:decision': (decision: RiskDecision) => void;
   'execution:trade': (trade: TradeEvent) => void;
+  'risk:circuit_break': (payload: { triggeredAt: number; drawdownPct: number; reason: string }) => void;
+  'portfolio:snapshot': (snapshot: PortfolioSnapshot) => void;
+  'agent:status': (status: AgentStatus) => void;
   'error': (error: Error) => void;
 }
 

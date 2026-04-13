@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  market-intelligence:
+    build: ../packages/agents/market-intelligence
+    depends_on:
+      - redis
+    env_file:
+      - ../.env
+
+  strategy:
+    build: ../packages/agents/strategy
+    depends_on:
+      - market-intelligence
+
+  risk:
+    build: ../packages/agents/risk
+    depends_on:
+      - strategy
+
+  execution:
+    build: ../packages/agents/execution
+    depends_on:
+      - risk
+
+  portfolio:
+    build: ../packages/agents/portfolio
+    depends_on:
+      - execution
+    ports:
+      - "3001:3001"
+
+  dashboard:
+    build: ../packages/dashboard
+    depends_on:
+      - portfolio
+    ports:
+      - "5173:5173"

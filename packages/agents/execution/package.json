@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "lint": "tsc --noEmit",
     "start": "ts-node src/index.ts"
   },
   "dependencies": {

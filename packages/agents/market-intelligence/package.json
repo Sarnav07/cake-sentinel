@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@pancakeswap-agent/core": "*",

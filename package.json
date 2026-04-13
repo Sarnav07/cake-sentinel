@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "PancakeSwap Autonomous Trading Agent System",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "workspaces": [
     "packages/*",
     "packages/agents/*"
@@ -10,10 +11,12 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:all": "bash ./start.sh",
     "lint": "turbo run lint",
     "test": "turbo run test"
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "turbo": "latest",
     "typescript": "^5.4.0",
     "vitest": "^1.4.0",

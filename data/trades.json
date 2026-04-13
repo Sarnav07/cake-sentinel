@@ -1,0 +1,19 @@
+[
+  {
+    "txHash": "0xdeadbeef",
+    "signalId": "8d66f1e9-432d-402f-95ef-a173ba43d0b6",
+    "strategyId": "arb-v1",
+    "pair": "WBNB/USDT",
+    "direction": "buy",
+    "sizeUSD": 100,
+    "entryPrice": 0.0033333333333333335,
+    "exitPrice": 2.9999999999999994e-16,
+    "grossProfitUSD": 39.88,
+    "gasUsedUSD": 0.18,
+    "feesUSD": 0.18,
+    "netProfitUSD": 39.7,
+    "timestamp": 1776036901890,
+    "regime": "trending",
+    "poolAddress": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+]
