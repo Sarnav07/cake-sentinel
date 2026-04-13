@@ -1,5 +1,5 @@
 export interface RiskPolicy {
-  maxPositionSizePct: number;
+  maxPositionSizeUSD: number;
   maxOpenPositions: number;
   stopLossPct: number;
   maxDrawdownPct: number;
@@ -10,7 +10,7 @@ export interface RiskPolicy {
 }
 
 export const DEFAULT_POLICY: RiskPolicy = {
-  maxPositionSizePct: 20,
+  maxPositionSizeUSD: 500,
   maxOpenPositions: 5,
   stopLossPct: 5,
   maxDrawdownPct: 10,

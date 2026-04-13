@@ -70,43 +70,53 @@ export function startRiskAgent() {
 
   orchestratorBus.on('strategy:signal', (signal) => {
     try {
+      console.log(`[Risk Agent] Evaluating TradeSignal ${signal.id} (Size: $${signal.sizeUSD.toFixed(2)})`);
+
       if (circuitBreaker.isPaused) {
+        console.log(`[Risk Agent] ❌ Denied: Circuit Breaker is active.`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'circuit_breaker_active'));
         return;
       }
 
       if (!latestMarketState) {
+        console.log(`[Risk Agent] ❌ Denied: No market state available.`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'no_market_state'));
         return;
       }
 
       const anomaly = detectAnomaly(latestMarketState, previousMarketState ?? undefined);
       if (anomaly.isAnomalous) {
+        console.log(`[Risk Agent] ❌ Denied: Market Anomaly Detected (${anomaly.reason})`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, anomaly.reason ?? 'market_anomaly'));
         return;
       }
 
       if (positionTracker.exceedsMaxPositionCount(DEFAULT_POLICY.maxOpenPositions)) {
+        console.log(`[Risk Agent] ❌ Denied: Position tracking limit exceeded (${DEFAULT_POLICY.maxOpenPositions})`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'max_open_positions_exceeded'));
         return;
       }
 
-      if (signal.sizeUSD > DEFAULT_POLICY.maxPositionSizePct * 100) {
+      if (signal.sizeUSD > DEFAULT_POLICY.maxPositionSizeUSD) {
+        console.log(`[Risk Agent] ❌ Denied: Trade exceeds $${DEFAULT_POLICY.maxPositionSizeUSD} maximum limit!`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'position_size_limit_exceeded'));
         return;
       }
 
       const gasCostUSD = signal.estimatedGasUSD ?? 0;
       if (gasCostUSD > DEFAULT_POLICY.maxGasCostUSD) {
+        console.log(`[Risk Agent] ❌ Denied: Gas exceeds maximum allowed cost.`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'gas_cost_too_high'));
         return;
       }
 
       if (signal.expectedProfitUSD - gasCostUSD < DEFAULT_POLICY.minExpectedProfitUSD) {
+        console.log(`[Risk Agent] ❌ Denied: Insufficient net profit after gas costs.`);
         orchestratorBus.emit('risk:decision', buildDecision(signal, false, 'insufficient_expected_profit'));
         return;
       }
 
+      console.log(`[Risk Agent] ✅ Approved TradeSignal ${signal.id} - Proceeding to Execution.`);
       orchestratorBus.emit('risk:decision', buildDecision(signal, true));
     } catch (error) {
       publishError('RiskAgent', error);
