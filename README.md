@@ -60,21 +60,6 @@ npm run dev
 ```
 > **Note**: BSC Testnet connection is attempted automatically. If RPC is unavailable, the system falls back to cached prices — all UI features remain functional.
 
-## Demo Guide (60-Second Pitch Walkthrough)
-
-Follow these steps exactly for a smooth live presentation sequence:
-
-1. Open the app. Point to the **AgentStatusBar** — watch the 7 agent dots transition smoothly from a dim booting state to a pulsing online state over the first 6 seconds.
-2. Point to the **ActivityFeed** — observe real agent log messages streaming in natively (e.g., *MarketIntel connecting to BSC Testnet*, *Simulation backtest complete*).
-3. Point to the **BNB price** in the top StatsBar — emphasize this is a living testnet query response and not simply mock data.
-4. Go to the **Strategy** tab — observe active signals naturally arriving within 10-15 seconds. Explain the three dynamic strategy regimes and conditionally gated deployment logic.
-5. Click **EXECUTE** on the top signal — highlight the button's multi-stage reactive transition: "● Executing..." → "✓ Confirmed", validating the async state handling.
-6. Go to the **Execution** tab — identify the new trade row populated at the top featuring the verified `[SIM]` execution badge.
-7. Open the **◈ DEMO** panel (bottom-right toggle). Click "RUN DEMO SEQUENCE". Narrate each of the 10 distinct orchestrator steps actively as they fire sequentially (~60 seconds total).
-8. When **TRIGGER BREACH** occurs (step 7), instantly bring attention to the red DISARMED banner appearing across the UI — explaining the reactive circuit breaker infrastructure limiting risk exposure.
-9. Click **REARM** manually on the panel — the system resolves back to a safe green monitoring operation.
-10. Show the **Portfolio** tab — visualize the dynamically populated equity curve chart responding historically to the demo trades generated.
-
 ## Agent Architecture Deep Dive
 
 ### 1. Market Intelligence Agent
@@ -134,34 +119,6 @@ A core pillar of autonomous protocol deployment requires rigid failure constrain
 - **Positional Caps**: No simulated allocation over `500 BNB` receives structural clearance regardless of perceived arbitrage yield.
 - **Rearm Procedure**: System continues parsing market data passively during breach; manual `REARM` authorizations restart Execution pipelines instantaneously.
 
-## Judging Criteria Compliance
-
-| Criterion | Status | Location in Codebase | Notes |
-| --- | --- | --- | --- |
-| **Required Agents** | | | |
-| Market Intelligence Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Retrieves live BNB price, calculates drift, detects regime changes |
-| Strategy Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Generates signals (ARB, TREND, MR) scoped by confidence/regime |
-| Execution Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Simulates testnet latency & gas; tracks EV/MEV labels |
-| Risk Management Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Enforces max drawdown, anomaly checks, position size limit |
-| Portfolio & Performance Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Tracks PnL, Win Rate, and logs executed trades |
-| Liquidity & Pool Analysis Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Connects to BSC Testnet for live pool reserves, checks imbalance |
-| Simulation & Backtesting Agent | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Validates signals via Monte Carlo simulating slippage |
-| **Required Features** | | | |
-| Multi-agent orchestration | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Shared context pub/sub with async sequential booting |
-| On-chain data pipeline | ✅ Implemented | `src/services/bscConnection.js` | BSC Testnet RPC with 3-tier fallback, `ethers.js` router calls |
-| Strategy engine | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Generates regime-based signal contexts, not hardcoded |
-| Risk framework | ✅ Implemented | `src/context/NexusContext.tsx` | Global DISARM circuit breakers |
-| Execution layer | ✅ Implemented | `src/agents/AgentOrchestrator.js` | Gas estimations & simulated transit |
-| Performance dashboard UI | ✅ Implemented | `src/pages/` | Rich metrics, PnL, live simulated dashboard |
-| **Bonus Features** | | | |
-| AI memory / RAG | 🟡 Partially Implemented | Repo Root | Framework established but full history indexing is stubbed |
-| Reinforcement learning | 🟡 Partially Implemented | Repo Root | Not active; fixed parameters are currently used for strategies |
-| Real-time streaming | 🟡 Partially Implemented | `bscConnection.js` | Interval polling used instead of WebSocket pub/sub |
-| Simulation dashboard | ✅ Implemented | `src/pages/StrategyPage.tsx` | What-if embedded in signal evaluation logic |
-| Agent collaboration visualization| 🟡 Partially Implemented | UI Dashboard | Live system dots track state, fully interactive DAG missing |
-| Natural language interface | ❌ Missing | None | Out of scope for this hackathon milestone |
-| Prediction market integration | ❌ Missing | None | Out of scope |
-
 ## What's Next (Future Work)
 
 Taking NEXUS from a high-fidelity algorithmic testing framework to a live mainnet production environment involves unlocking several technical tiers:
@@ -172,4 +129,4 @@ Taking NEXUS from a high-fidelity algorithmic testing framework to a live mainne
 
 ## Team
 
-Built by **Shrishti** — IIT Roorkee
+Built by **7 X 7 = 49** — IIT Roorkee
