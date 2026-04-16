@@ -6,18 +6,7 @@ import {
 } from 'recharts'
 import { useLiquidityStream } from '../../context/NexusContext'
 
-// 30-point mock: oscillating $240–$268
-const DATA = [
-  { t: '21:51', p: 247.2 }, { t: '21:57', p: 249.8 }, { t: '22:03', p: 252.1 },
-  { t: '22:09', p: 255.4 }, { t: '22:15', p: 258.0 }, { t: '22:21', p: 261.3 },
-  { t: '22:27', p: 263.7 }, { t: '22:33', p: 260.5 }, { t: '22:39', p: 256.9 },
-  { t: '22:45', p: 253.2 }, { t: '22:51', p: 256.8 }, { t: '22:57', p: 259.4 },
-  { t: '23:03', p: 262.7 }, { t: '23:09', p: 265.1 }, { t: '23:15', p: 268.0 },
-  { t: '23:21', p: 265.6 }, { t: '23:27', p: 262.3 }, { t: '23:33', p: 258.9 },
-  { t: '23:39', p: 255.7 }, { t: '23:45', p: 252.4 }, { t: '23:51', p: 248.8 },
-  { t: '23:57', p: 245.1 }, { t: '0:03',  p: 241.9 }, { t: '0:09',  p: 244.3 },
-  { t: '0:15',  p: 248.7 }, { t: '0:16',  p: 251.2 },
-]
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
@@ -105,11 +94,11 @@ export default function LiquidityStream() {
             interval={4}
           />
           <YAxis
-            domain={[237, 270]}
+            domain={['auto', 'auto']}
             stroke="transparent"
             tick={{ fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
             tickLine={false}
-            tickFormatter={v => `$${v}`}
+            tickFormatter={v => `$${v.toFixed(0)}`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area

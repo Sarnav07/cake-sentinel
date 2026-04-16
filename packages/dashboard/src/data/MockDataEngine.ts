@@ -19,6 +19,7 @@ export interface Trade {
 export interface Pool {
   name: string; version: 'V2' | 'V3'; tier: 'BLUE-CHIP' | 'MID-CAP' | 'DEGEN'
   fee: string; tvl: number; vol24h: number; aprRaw: number; apr: string; arb: boolean
+  reserveImbalance: number  // 0–20%
 }
 
 export interface Signal {
@@ -54,6 +55,19 @@ export interface StrategyPerf {
   avgProfit: string
   total: string
   status: 'ACTIVE' | 'PAUSED'
+}
+
+export interface EquityPoint {
+  time: string; totalPnL: number; benchmark: number
+}
+
+export interface TradeBucket {
+  bucket: string; count: number; profit: boolean | null
+}
+
+export interface StrategyBreakdown {
+  name: string; trades: number; winPct: string
+  grossPnL: number; gasCost: number; netPnL: number; sharpe: number
 }
 
 export interface DrawdownPoint { time: string; value: number }
@@ -105,6 +119,11 @@ export interface EngineState {
   riskLimits: RiskLimits
   circuitBreakers: CircuitBreakers
   positionExposure: PositionExposure[]
+  // Portfolio tab state
+  equityCurve: EquityPoint[]
+  gasEfficiency: number
+  tradeDistribution: TradeBucket[]
+  strategyBreakdown: StrategyBreakdown[]
 }
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
@@ -140,12 +159,29 @@ const INIT_STRATEGY_PERF: StrategyPerf[] = [
 ]
 
 const POOL_INIT: Pool[] = [
-  { name: 'BNB/BUSD',  version: 'V3', tier: 'BLUE-CHIP', fee: '0.05%', tvl: 1.08e12, vol24h: 1.24e6,  aprRaw: 14.1,  apr: '14.1%',  arb: false },
-  { name: 'CAKE/BNB',  version: 'V3', tier: 'MID-CAP',   fee: '0.25%', tvl: 2.40e12, vol24h: 320e3,   aprRaw: 47.2,  apr: '47.2%',  arb: true  },
-  { name: 'ETH/USDC',  version: 'V3', tier: 'BLUE-CHIP', fee: '0.05%', tvl: 720e6,   vol24h: 78e3,    aprRaw: 12.2,  apr: '12.2%',  arb: false },
-  { name: 'BTCB/USDT', version: 'V2', tier: 'BLUE-CHIP', fee: '0.25%', tvl: 441e6,   vol24h: 48e3,    aprRaw: 9.8,   apr: '9.8%',   arb: false },
-  { name: 'XRP/USDT',  version: 'V2', tier: 'MID-CAP',   fee: '0.25%', tvl: 128e6,   vol24h: 22e3,    aprRaw: 31.4,  apr: '31.4%',  arb: false },
-  { name: 'SHIB/BUSD', version: 'V2', tier: 'DEGEN',     fee: '1.00%', tvl: 18e6,    vol24h: 4200,    aprRaw: 124.7, apr: '124.7%', arb: false },
+  { name: 'BNB/BUSD',  version: 'V3', tier: 'BLUE-CHIP', fee: '0.05%', tvl: 1.08e12, vol24h: 1.24e6,  aprRaw: 14.1,  apr: '14.1%',  arb: false, reserveImbalance: 0.4 },
+  { name: 'CAKE/BNB',  version: 'V3', tier: 'MID-CAP',   fee: '0.25%', tvl: 2.40e12, vol24h: 320e3,   aprRaw: 47.2,  apr: '47.2%',  arb: true,  reserveImbalance: 2.1 },
+  { name: 'ETH/USDC',  version: 'V3', tier: 'BLUE-CHIP', fee: '0.05%', tvl: 720e6,   vol24h: 78e3,    aprRaw: 12.2,  apr: '12.2%',  arb: false, reserveImbalance: 0.7 },
+  { name: 'BTCB/USDT', version: 'V2', tier: 'BLUE-CHIP', fee: '0.25%', tvl: 441e6,   vol24h: 48e3,    aprRaw: 9.8,   apr: '9.8%',   arb: false, reserveImbalance: 0.2 },
+  { name: 'XRP/USDT',  version: 'V2', tier: 'MID-CAP',   fee: '0.25%', tvl: 128e6,   vol24h: 22e3,    aprRaw: 31.4,  apr: '31.4%',  arb: false, reserveImbalance: 1.3 },
+  { name: 'SHIB/BUSD', version: 'V2', tier: 'DEGEN',     fee: '1.00%', tvl: 18e6,    vol24h: 4200,    aprRaw: 124.7, apr: '124.7%', arb: false, reserveImbalance: 8.4 },
+]
+
+const INIT_BREAKDOWN: StrategyBreakdown[] = [
+  { name: 'Cross-pool Arb',  trades: 142, winPct: '71.8%', grossPnL: 198.41, gasCost: 22.33, netPnL: 176.08, sharpe: 2.41 },
+  { name: 'Trend Following', trades:  58, winPct: '65.5%', grossPnL: 221.11, gasCost: 23.33, netPnL: 197.78, sharpe: 1.87 },
+  { name: 'Mean Reversion',  trades:  34, winPct: '58.8%', grossPnL:  41.91, gasCost:  8.93, netPnL:  32.98, sharpe: 1.12 },
+  { name: 'LP Provision',    trades:  12, winPct: '91.7%', grossPnL:  53.24, gasCost:  7.56, netPnL:  45.68, sharpe: 3.02 },
+]
+
+const INIT_DISTRIBUTION = (): TradeBucket[] => [
+  { bucket: '-$5+', count:  4, profit: false },
+  { bucket: '-$3',  count:  7, profit: false },
+  { bucket: '-$1',  count: 11, profit: false },
+  { bucket: '+$0',  count:  5, profit: null  },
+  { bucket: '+$1',  count: 18, profit: true  },
+  { bucket: '+$3',  count: 22, profit: true  },
+  { bucket: '+$5+', count: 13, profit: true  },
 ]
 
 const nowStr = () => new Date().toLocaleTimeString('en-US', { hour12: false })
@@ -160,6 +196,8 @@ export class MockDataEngine {
   private _regimeIdx = 0
   // track cumulative drawdown for history
   private _cumulativeDD = 0
+  // track previous pool APRs for flash detection
+  private _prevPoolAprs: Record<string, number> = {}
 
   constructor() {
     const now = new Date().toLocaleTimeString('en-US', { hour12: false })
@@ -168,6 +206,16 @@ export class MockDataEngine {
       time: now,
       value: -(Math.abs(Math.sin(i / 6)) * 5 + Math.random() * 1.2),
     }))
+    // seed 200-point equity curve (historical shape)
+    let runningPnL = 0
+    const equityCurve: EquityPoint[] = Array.from({ length: 200 }, (_, i) => {
+      const delta = randomNormal(0.6, 3.5)
+      runningPnL = Math.max(0, runningPnL + delta)
+      return { time: now, totalPnL: parseFloat(runningPnL.toFixed(2)), benchmark: parseFloat((runningPnL * 0.72).toFixed(2)) }
+    })
+    // seed init pool APRs for flash comparison
+    POOL_INIT.forEach(p => { this._prevPoolAprs[p.name] = p.aprRaw })
+    const pools = POOL_INIT.map(p => ({ ...p }))
     this.state = {
       prices: {
         'BNB/USDC':  this._initPrice(312.40),
@@ -180,7 +228,7 @@ export class MockDataEngine {
       liquidityStream: Array.from({ length: 30 }, (_, i) => 250 + Math.sin(i / 5) * 10 + Math.random() * 5),
       trades: this._initTrades(),
       risk: { drawdown: 4.8, anomaly: 22, sharpe: 2.41, positionSize: 320 },
-      pools: POOL_INIT.map(p => ({ ...p })),
+      pools,
       activity: [],
       agents: (Object.entries(AGENT_COLORS) as [AgentName, string][]).map(([name, color]) => ({ name, active: false, color })),
       signals: STRATEGY_TEMPLATES.map(s => ({ ...s, timestamp: now })),
@@ -202,6 +250,11 @@ export class MockDataEngine {
         { token: 'USDT', exposure: '$412.00', portfolioPct: '28.4%', riskLevel: 'LOW'    },
         { token: 'CAKE', exposure: '$193.40', portfolioPct: '13.3%', riskLevel: 'MEDIUM' },
       ],
+      // Portfolio tab
+      equityCurve,
+      gasEfficiency: 89.2,
+      tradeDistribution: INIT_DISTRIBUTION(),
+      strategyBreakdown: INIT_BREAKDOWN,
     }
   }
 
@@ -233,6 +286,8 @@ export class MockDataEngine {
     this.timers.push(setInterval(() => this._tickDrawdown(), 5000))
     // Flash crash trip: every 120s
     this.timers.push(setInterval(() => this._tripFlashCrash(), 120000))
+    // Equity curve: every 4s
+    this.timers.push(setInterval(() => this._tickEquity(), 4000))
   }
 
   stop() {
@@ -310,16 +365,40 @@ export class MockDataEngine {
     const newTradeCount = s.tradeCount + 1
     const newWinCount   = isWin ? s.winCount + 1 : s.winCount
 
-    // Update position exposure to reflect new trade token
+    // Update position exposure
     const baseToken = pair.split('/')[0]
     const exposure  = this.state.positionExposure.map(e => {
       if (e.token === baseToken || e.token === 'W' + baseToken) {
-        const delta = Math.abs(pnl) * 0.3
-        const raw   = parseFloat(e.exposure.replace('$','')) + (isWin ? delta : -delta)
-        const capped = Math.max(50, raw)
-        return { ...e, exposure: `$${capped.toFixed(2)}` }
+        const delta  = Math.abs(pnl) * 0.3
+        const raw    = parseFloat(e.exposure.replace('$','')) + (isWin ? delta : -delta)
+        return { ...e, exposure: `$${Math.max(50, raw).toFixed(2)}` }
       }
       return e
+    })
+
+    // Update trade distribution bucket
+    const bucket = pnl < -5 ? '-$5+' : pnl < -3 ? '-$3' : pnl < -1 ? '-$1'
+      : pnl < 0 ? '+$0' : pnl < 1 ? '+$1' : pnl < 3 ? '+$3' : '+$5+'
+    const tradeDistribution = this.state.tradeDistribution.map(b =>
+      b.bucket === bucket ? { ...b, count: b.count + 1 } : b
+    )
+
+    // Update strategy breakdown — rotate through strategies
+    const stratNames = ['Cross-pool Arb','Trend Following','Mean Reversion','LP Provision']
+    const stratName  = stratNames[Math.floor(Math.random() * stratNames.length)]
+    const strategyBreakdown = this.state.strategyBreakdown.map(row => {
+      if (row.name !== stratName) return row
+      const newGross = row.grossPnL + (pnl > 0 ? pnl : 0)
+      const newGas   = row.gasCost  + trade.gas
+      const newNet   = newGross - newGas
+      const newTrades = row.trades + 1
+      return {
+        ...row,
+        trades:   newTrades,
+        grossPnL: parseFloat(newGross.toFixed(2)),
+        gasCost:  parseFloat(newGas.toFixed(4)),
+        netPnL:   parseFloat(newNet.toFixed(2)),
+      }
     })
 
     this.state = {
@@ -334,6 +413,8 @@ export class MockDataEngine {
         tradeCount:  newTradeCount,
       },
       positionExposure: exposure,
+      tradeDistribution,
+      strategyBreakdown,
     }
     this._activateAgent('Execution')
     this._emit()
@@ -365,12 +446,34 @@ export class MockDataEngine {
 
   private _tickPools() {
     const pools = this.state.pools.map(p => {
-      const arbTriggered = Math.random() < 0.15
-      const newVol = p.vol24h * (1 + randomNormal(0, 0.02))
-      const newApr = parseFloat((p.aprRaw * (1 + randomNormal(0, 0.005))).toFixed(1))
-      if (arbTriggered && !p.arb) this._activateAgent('Market Intel')
-      return { ...p, vol24h: Math.max(1000, newVol), aprRaw: Math.max(1, newApr), apr: `${Math.max(1, newApr).toFixed(1)}%`, arb: arbTriggered }
+      const shouldTriggerArb = Math.random() < 0.15 && !p.arb
+      const newVol = p.vol24h * (1 + randomNormal(0, 0.025))
+      const newApr = parseFloat((p.aprRaw * (1 + randomNormal(0, 0.008))).toFixed(1))
+      const newImbalance = Math.max(0, Math.min(20, p.reserveImbalance + randomNormal(0, 0.1)))
+      if (shouldTriggerArb) {
+        this._activateAgent('Market Intel')
+        // auto-reset arb after 10s
+        setTimeout(() => {
+          this.state = {
+            ...this.state,
+            pools: this.state.pools.map(pp => pp.name === p.name ? { ...pp, arb: false } : pp),
+          }
+          this._emit()
+        }, 10000)
+      }
+      return {
+        ...p,
+        vol24h:           Math.max(1000, newVol),
+        aprRaw:           Math.max(1, newApr),
+        apr:              `${Math.max(1, newApr).toFixed(1)}%`,
+        arb:              shouldTriggerArb ? true : p.arb,
+        reserveImbalance: parseFloat(newImbalance.toFixed(2)),
+      }
     })
+    // store previous APRs for flash detection in UI
+    const newPrevAprs: Record<string, number> = {}
+    this.state.pools.forEach(p => { newPrevAprs[p.name] = p.aprRaw })
+    this._prevPoolAprs = newPrevAprs
     this.state = { ...this.state, pools }
     this._emit()
   }
@@ -489,6 +592,50 @@ export class MockDataEngine {
   // public setter — called from context when user flips a breaker
   setCircuitBreakers(breakers: Partial<CircuitBreakers>) {
     this.state = { ...this.state, circuitBreakers: { ...this.state.circuitBreakers, ...breakers } }
+    this._emit()
+  }
+
+  // public — called from Liquidity tab "Enter Position" button
+  sendToStrategy(poolName: string) {
+    const pool = this.state.pools.find(p => p.name === poolName)
+    if (!pool) return
+    const now = nowStr()
+    const newSignal: Signal = {
+      id: `pool-${Date.now()}`,
+      pair: pool.name,
+      strategy: 'ARBITRAGE',
+      expectedProfit: parseFloat((Math.random() * 4 + 0.5).toFixed(2)),
+      confidence: Math.floor(50 + Math.random() * 44),
+      riskScore: Math.ceil(Math.random() * 3),
+      entryPrice: this.state.prices[pool.name]?.price ?? 0,
+      exitPrice:  0,
+      timestamp:  now,
+    }
+    const signals = [newSignal, ...this.state.signals].slice(0, 6)
+    signals.sort((a, b) => b.confidence - a.confidence)
+    this.state = { ...this.state, signals }
+    this._activateAgent('Strategy')
+    this._emit()
+  }
+
+  // get previous pool APRs for flash detection in UI
+  getPrevAprs(): Record<string, number> { return { ...this._prevPoolAprs } }
+
+  private _tickEquity() {
+    const last  = this.state.equityCurve[this.state.equityCurve.length - 1]
+    const delta = this.state.trades[0]?.pnl ?? randomNormal(0.4, 2)
+    const newPnL = parseFloat(Math.max(0, last.totalPnL + delta).toFixed(2))
+    const point: EquityPoint = {
+      time:      nowStr(),
+      totalPnL:  newPnL,
+      benchmark: parseFloat((newPnL * 0.72).toFixed(2)),
+    }
+    this.state = {
+      ...this.state,
+      equityCurve:   [...this.state.equityCurve.slice(1), point],
+      gasEfficiency: Math.max(60, Math.min(98, this.state.gasEfficiency + randomNormal(0, 0.3))),
+    }
+    this._activateAgent('Portfolio')
     this._emit()
   }
 

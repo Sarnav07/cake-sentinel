@@ -3,6 +3,7 @@ import {
   engine, EngineState, AgentName,
   Signal, MarketRegime, RegimeHistoryEntry, StrategyPerf,
   RiskLimits, CircuitBreakers, DrawdownPoint, PositionExposure,
+  EquityPoint, TradeBucket, StrategyBreakdown,
 } from '../data/MockDataEngine'
 
 // ── Context shape ─────────────────────────────────────────────────────────────
@@ -32,6 +33,13 @@ interface NexusCtx {
   marketRegime: MarketRegime
   regimeHistory: RegimeHistoryEntry[]
   strategyPerformance: StrategyPerf[]
+  // Portfolio tab shortcuts
+  equityCurve: EquityPoint[]
+  gasEfficiency: number
+  tradeDistribution: TradeBucket[]
+  strategyBreakdown: StrategyBreakdown[]
+  // Liquidity tab actions
+  sendToStrategy: (poolName: string) => void
 }
 
 const Ctx = createContext<NexusCtx | null>(null)
@@ -57,6 +65,8 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
   const setRiskLimits    = useCallback((l: Partial<RiskLimits>)    => engine.setRiskLimits(l), [])
   const setCircuitBreakers = useCallback((b: Partial<CircuitBreakers>) => engine.setCircuitBreakers(b), [])
 
+  const sendToStrategy = useCallback((poolName: string) => engine.sendToStrategy(poolName), [])
+
   return (
     <Ctx.Provider value={{
       state, armed, toggleArmed,
@@ -73,6 +83,13 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
       marketRegime:        state.marketRegime,
       regimeHistory:       state.regimeHistory,
       strategyPerformance: state.strategyPerformance,
+      // Portfolio tab shortcuts
+      equityCurve:         state.equityCurve,
+      gasEfficiency:       state.gasEfficiency,
+      tradeDistribution:   state.tradeDistribution,
+      strategyBreakdown:   state.strategyBreakdown,
+      // Liquidity tab actions
+      sendToStrategy,
     }}>
       {children}
     </Ctx.Provider>
@@ -161,3 +178,27 @@ export function usePositionExposure() {
   const { state } = useNexus()
   return state.positionExposure
 }
+
+// Portfolio tab hooks
+export function useEquityCurve() {
+  const { state } = useNexus()
+  return state.equityCurve
+}
+
+export function useTradeDist() {
+  const { state } = useNexus()
+  return state.tradeDistribution
+}
+
+export function useStrategyBreakdown() {
+  const { state } = useNexus()
+  return state.strategyBreakdown
+}
+
+export function useGasEfficiency() {
+  const { state } = useNexus()
+  return state.gasEfficiency
+}
+
+// Re-export types for page files
+export type { EquityPoint, TradeBucket, StrategyBreakdown }
