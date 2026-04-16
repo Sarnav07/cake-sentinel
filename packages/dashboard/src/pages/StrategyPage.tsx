@@ -5,12 +5,13 @@ import { useNexus, useSignals, useMarketRegime, useStrategyPerformance } from '.
 import { SkeletonRow } from '../components/shared/SkeletonLoader'
 import SkeletonLoader from '../components/ui/SkeletonLoader'
 import type { Signal, RegimeLabel } from '../data/MockDataEngine'
+import { theme } from '../styles/theme'
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const STRATEGY_BADGE: Record<string, React.CSSProperties> = {
-  'ARBITRAGE':      { background: 'rgba(0,229,255,0.1)',  border: '1px solid rgba(0,229,255,0.25)',  color: '#00e5ff' },
-  'TREND':          { background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)', color: '#a855f7' },
-  'MEAN-REVERSION': { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' },
+  'ARBITRAGE':      { background: 'rgba(0,229,255,0.1)',  border: `1px solid rgba(0,229,255,0.25)`,  color: theme.accent.primary  },
+  'TREND':          { background: 'rgba(168,85,247,0.1)', border: `1px solid rgba(168,85,247,0.25)`, color: theme.accent.sim      },
+  'MEAN-REVERSION': { background: 'rgba(245,158,11,0.1)', border: `1px solid rgba(245,158,11,0.25)`, color: theme.accent.warning  },
 }
 const RISK_COLORS = ['', 'var(--green)', 'var(--cyan)', 'var(--amber)', 'var(--magenta)', 'var(--red)']
 
@@ -76,7 +77,7 @@ function SignalCard({ s, i, flash }: { s: Signal; i: number; flash: boolean }) {
           </div>
           <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <motion.div layout className="h-full rounded-full"
-              style={{ width: `${s.confidence}%`, background: 'var(--cyan)', boxShadow: '0 0 6px rgba(0,229,255,0.5)' }} />
+              style={{ width: `${s.confidence}%`, background: 'var(--cyan)', boxShadow: `0 0 6px ${theme.glow.strong}` }} />
           </div>
         </div>
         <div>
@@ -114,7 +115,7 @@ function SignalCard({ s, i, flash }: { s: Signal; i: number; flash: boolean }) {
         <motion.button
           onClick={handleExecute}
           disabled={!armed || executing}
-          whileHover={{ background: 'rgba(0,229,255,0.15)', boxShadow: '0 0 12px rgba(0,229,255,0.3)' }}
+          whileHover={{ background: `rgba(0,229,255,0.15)`, boxShadow: `0 0 12px ${theme.glow.track}` }}
           whileTap={{ scale: 0.95 }}
           className="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] transition-all"
           style={{ border: '1px solid rgba(0,229,255,0.35)', color: executing || !armed ? 'var(--text-muted)' : 'var(--cyan)',
@@ -269,11 +270,11 @@ function RegimeDetector() {
           <AreaChart data={volData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                <stop offset="0%" stopColor={theme.chart.line4} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={theme.chart.line4} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <Area type="monotone" dataKey="v" stroke="#f59e0b" strokeWidth={1.5}
+            <Area type="monotone" dataKey="v" stroke={theme.chart.line4} strokeWidth={1.5}
               fill="url(#volGrad)" isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>

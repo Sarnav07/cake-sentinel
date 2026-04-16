@@ -1,11 +1,12 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { usePoolData } from '../../context/NexusContext'
+import { theme } from '../../styles/theme'
 
 const BADGE_STYLES: Record<string, React.CSSProperties> = {
-  'BLUE-CHIP': { background: 'rgba(0,229,255,0.10)',  border: '1px solid rgba(0,229,255,0.25)',  color: '#00e5ff' },
-  'MID-CAP':   { background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' },
-  'DEGEN':     { background: 'rgba(255,68,68,0.10)',  border: '1px solid rgba(255,68,68,0.25)',  color: '#ff4444' },
+  'BLUE-CHIP': { background: 'rgba(0,229,255,0.10)',  border: `1px solid rgba(0,229,255,0.25)`,  color: theme.accent.primary  },
+  'MID-CAP':   { background: 'rgba(245,158,11,0.10)', border: `1px solid rgba(245,158,11,0.25)`, color: theme.accent.warning  },
+  'DEGEN':     { background: 'rgba(255,68,68,0.10)',  border: `1px solid rgba(255,68,68,0.25)`,  color: theme.accent.danger   },
 }
 
 const APR_COLOR = (apr: number) =>
@@ -63,7 +64,7 @@ export default function PoolIntelligence() {
                   <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.2, repeat: Infinity }}
                     className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-[0.12em]"
                     style={{ fontFamily: 'var(--font-mono)', background: 'rgba(245,158,11,0.15)',
-                      border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b' }}>
+                      border: `1px solid rgba(245,158,11,0.4)`, color: theme.accent.warning }}>
                     ⚡ ARB
                   </motion.span>
                 )}

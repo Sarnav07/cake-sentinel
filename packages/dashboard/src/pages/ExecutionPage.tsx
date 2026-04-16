@@ -4,6 +4,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts'
 import { AnimatePresence } from 'framer-motion'
 import { useExecutionFeed, useNexus } from '../context/NexusContext'
 import type { Trade } from '../data/MockDataEngine'
+import { theme } from '../styles/theme'
 
 // ── Trade Detail Drawer ───────────────────────────────────────────────────────
 function TradeDrawer({ trade, onClose }: { trade: Trade; onClose: () => void }) {

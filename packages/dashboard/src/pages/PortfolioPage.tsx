@@ -13,6 +13,7 @@ import {
   useLivePnL, useGasEfficiency, useEquityCurve,
   useStrategyBreakdown, useTradeDist, useNexus,
 } from '../context/NexusContext'
+import { theme } from '../styles/theme'
 
 // ── useCountUp ────────────────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 800): number {
@@ -82,7 +83,7 @@ function WinDonut({ value }: { value: number }) {
       <Pie data={data} cx={28} cy={28} innerRadius={20} outerRadius={28}
         startAngle={90} endAngle={-270} stroke="none" dataKey="v">
         <Cell fill="var(--cyan)" />
-        <Cell fill="rgba(255,255,255,0.04)" />
+        <Cell fill={theme.chart.emptyFill} />
       </Pie>
     </PieChart>
   )
@@ -157,15 +158,15 @@ export default function PortfolioPage() {
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <defs>
               <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#00e5ff" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#00e5ff" stopOpacity={0}    />
+                <stop offset="0%"   stopColor={theme.chart.line1} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={theme.chart.line1} stopOpacity={0}    />
               </linearGradient>
               <linearGradient id="purpGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#a855f7" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#a855f7" stopOpacity={0}   />
+                <stop offset="0%"   stopColor={theme.chart.line2} stopOpacity={0.2} />
+                <stop offset="100%" stopColor={theme.chart.line2} stopOpacity={0}   />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={theme.chart.grid} vertical={false} />
             <XAxis dataKey="time" stroke="transparent"
               tick={{ fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
               tickLine={false} interval={Math.floor(chartData.length / 6)} />
@@ -174,10 +175,10 @@ export default function PortfolioPage() {
               tickLine={false} tickFormatter={v => `$${v.toFixed(0)}`} domain={['auto', 'auto']} />
             <Tooltip content={<EquityTooltip />} />
             <Area type="monotone" dataKey="benchmark" name="Benchmark"
-              stroke="#a855f7" strokeWidth={2} strokeDasharray="6 4" fill="url(#purpGrad)"
+              stroke={theme.chart.line2} strokeWidth={2} strokeDasharray="6 4" fill="url(#purpGrad)"
               isAnimationActive={false} />
             <Area type="monotone" dataKey="totalPnL" name="Total Return"
-              stroke="#00e5ff" strokeWidth={2.5} fill="url(#cyanGrad)"
+              stroke={theme.chart.line1} strokeWidth={2.5} fill="url(#cyanGrad)"
               isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>}

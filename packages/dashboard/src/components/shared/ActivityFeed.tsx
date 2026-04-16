@@ -2,16 +2,9 @@ import React, { useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useActivityFeed } from '../../context/NexusContext'
 import type { AgentName } from '../../data/MockDataEngine'
+import { theme } from '../../styles/theme'
 
-const AGENT_COLORS: Record<AgentName, string> = {
-  'Market Intel': '#00e5ff',
-  'Strategy':     '#a855f7',
-  'Execution':    '#f59e0b',
-  'Risk':         '#ff4444',
-  'Portfolio':    '#00ff88',
-  'Liquidity':    '#38bdf8',
-  'Simulation':   '#f472b6',
-}
+const AGENT_COLORS: Record<AgentName, string> = theme.agent
 
 const AGENT_BG: Record<AgentName, string> = {
   'Market Intel': 'rgba(0,229,255,0.08)',

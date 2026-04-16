@@ -4,6 +4,7 @@ import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 import { useLivePnL, useNexus } from '../../context/NexusContext'
 import SkeletonLoader from '../ui/SkeletonLoader'
 import MonoValue from '../ui/MonoValue'
+import { theme } from '../../styles/theme'
 
 const spark = (seed: number, len = 12) =>
   Array.from({ length: len }, (_, i) => ({ v: 50 + Math.sin((i + seed) / 2) * 30 + Math.random() * 10 }))
@@ -21,23 +22,23 @@ export default function StatsBar() {
       label: 'Total P&L',
       value: `${pnl.total >= 0 ? '+' : ''}$${pnl.total.toFixed(2)}`,
       color: pnl.total >= 0 ? 'var(--green)' : 'var(--red)',
-      stroke: pnl.total >= 0 ? '#00ff88' : '#ff4444',
+      stroke: pnl.total >= 0 ? theme.chart.line5 : theme.accent.danger,
       data: spark(0),
     },
     {
       label: 'Win Rate',
       value: `${pnl.winRate.toFixed(1)}%`,
-      color: 'var(--cyan)', stroke: '#00e5ff', data: spark(2),
+      color: 'var(--cyan)', stroke: theme.chart.line1, data: spark(2),
     },
     {
       label: 'Active Trades',
       value: String(pnl.activeCount),
-      color: 'var(--purple)', stroke: '#a855f7', data: spark(4),
+      color: 'var(--purple)', stroke: theme.chart.line2, data: spark(4),
     },
     {
       label: 'Total Trades',
       value: String(pnl.tradeCount),
-      color: 'var(--magenta)', stroke: '#ff2d78', data: spark(6),
+      color: 'var(--magenta)', stroke: theme.accent.magenta, data: spark(6),
     },
   ]
 
@@ -54,7 +55,7 @@ export default function StatsBar() {
             background: 'var(--bg-card)',
             border: '1px solid var(--border-dim)',
           }}
-          whileHover={{ borderColor: 'var(--border-accent)', boxShadow: '0 0 20px rgba(0,229,255,0.05)' }}
+          whileHover={{ borderColor: 'var(--border-accent)', boxShadow: `0 0 20px ${theme.glow.card}` }}
         >
           {/* Sparkline background */}
           <div className="absolute inset-0 bottom-0 opacity-70 pointer-events-none">

@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useNexus, useRiskMetrics } from '../../context/NexusContext'
+import { theme } from '../../styles/theme'
 
 // ── Dual-track slider ─────────────────────────────────────────────────────────
 // Shows: cyan filled track up to LIMIT (user-set), white/amber/red marker at CURRENT (engine)
@@ -50,7 +51,7 @@ function DualTrackSlider({ label, limit, current, max, onChange, step = 0.1 }: D
       <div className="relative h-[4px] rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
         {/* Cyan fill — up to LIMIT position */}
         <div className="absolute top-0 left-0 h-full rounded-full transition-all duration-150"
-          style={{ width: `${limitPct}%`, background: 'var(--cyan)', boxShadow: '0 0 8px rgba(0,229,255,0.4)' }} />
+          style={{ width: `${limitPct}%`, background: 'var(--cyan)', boxShadow: `0 0 8px ${theme.glow.track}` }} />
 
         {/* Current value marker — vertical bar */}
         <motion.div
@@ -65,7 +66,7 @@ function DualTrackSlider({ label, limit, current, max, onChange, step = 0.1 }: D
         <div className="absolute top-[-6px] left-0 w-full h-[16px]">
           <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 pointer-events-none transition-all duration-75"
             style={{ left: `calc(${limitPct}% - 6px)`, background: 'var(--bg-primary)',
-              borderColor: 'var(--cyan)', boxShadow: '0 0 10px rgba(0,229,255,0.8)' }} />
+              borderColor: 'var(--cyan)', boxShadow: `0 0 10px ${theme.glow.thumb}` }} />
           <input type="range" min={0} max={max} step={step} value={limit}
             onChange={e => onChange(parseFloat(e.target.value))}
             className="absolute inset-0 w-full opacity-0 cursor-pointer" style={{ margin: 0 }} />
@@ -111,7 +112,7 @@ export default function RiskGuardian() {
           <motion.span
             animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 0.7, repeat: Infinity }}
             className="ml-auto text-[8px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded"
-            style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.35)',
+            style={{ background: 'rgba(255,68,68,0.12)', border: `1px solid rgba(255,68,68,0.35)`,
               color: 'var(--red)', fontFamily: 'var(--font-mono)' }}>
             PAUSED
           </motion.span>
@@ -145,7 +146,7 @@ export default function RiskGuardian() {
       {/* ARMED / DISARMED toggle */}
       <motion.button
         onClick={toggleArmed}
-        whileHover={{ scale: 1.02, boxShadow: `0 0 20px ${armed ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.5)'}` }}
+        whileHover={{ scale: 1.02, boxShadow: `0 0 20px ${armed ? theme.glow.success : theme.glow.danger}` }}
         whileTap={{ scale: 0.97 }}
         className="w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.35em] transition-all"
         style={{
@@ -153,9 +154,9 @@ export default function RiskGuardian() {
           border:      `1px solid ${armed ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,68,0.5)'}`,
           color:       armed ? 'var(--green)' : 'var(--red)',
           fontFamily:  'var(--font-mono)',
-          boxShadow:   `0 0 ${armed ? '12px rgba(0,255,136,0.15)' : '16px rgba(255,68,68,0.25)'}`,
+          boxShadow:   `0 0 ${armed ? `12px ${theme.glow.success}` : `16px ${theme.glow.danger}`}`,
         }}
-        animate={!armed ? { boxShadow: ['0 0 16px rgba(255,68,68,0.3)', '0 0 28px rgba(255,68,68,0.6)', '0 0 16px rgba(255,68,68,0.3)'] } : {}}
+        animate={!armed ? { boxShadow: [`0 0 16px ${theme.glow.dangerPulse}`, `0 0 28px ${theme.glow.dangerPeak}`, `0 0 16px ${theme.glow.dangerPulse}`] } : {}}
         transition={{ duration: 1.2, repeat: Infinity }}
       >
         ● {armed ? 'ARMED' : 'DISARMED'}

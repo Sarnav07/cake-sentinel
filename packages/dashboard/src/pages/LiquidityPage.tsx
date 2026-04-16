@@ -9,6 +9,7 @@ import SkeletonLoader from '../components/ui/SkeletonLoader'
 import { usePoolData, useLivePrice, useNexus } from '../context/NexusContext'
 import { engine } from '../data/MockDataEngine'
 import type { Pool } from '../data/MockDataEngine'
+import { theme } from '../styles/theme'
 
 // ── Style helpers ─────────────────────────────────────────────────────────────
 const TIER_STYLE: Record<string, { color: string; badge: 'cyan' | 'amber' | 'red' }> = {
@@ -94,8 +95,8 @@ function PoolCard({ pool, i, maxTvl }: { pool: Pool; i: number; maxTvl: number }
       className="rounded-xl p-4 transition-all duration-200 relative overflow-hidden cursor-pointer"
       style={{ background: 'var(--bg-card)', border: '1px solid var(--border-dim)' }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      whileHover={{ borderColor: tier.badge === 'cyan' ? 'rgba(0,229,255,0.3)'
-        : tier.badge === 'amber' ? 'rgba(245,158,11,0.3)' : 'rgba(255,68,68,0.3)' }}
+      whileHover={{ borderColor: tier.badge === 'cyan' ? `rgba(0,229,255,0.3)`
+        : tier.badge === 'amber' ? `rgba(245,158,11,0.3)` : `rgba(255,68,68,0.3)` }}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -119,7 +120,7 @@ function PoolCard({ pool, i, maxTvl }: { pool: Pool; i: number; maxTvl: number }
           </div>
         </div>
         <motion.span
-          animate={{ color: aprFlash ? '#00ff88' : APR_COLOR(pool.aprRaw) }}
+          animate={{ color: aprFlash ? theme.accent.success : APR_COLOR(pool.aprRaw) }}
           transition={{ duration: 0.3 }}
           className="text-[10px] font-bold text-right ml-2"
           style={{ fontFamily: 'var(--font-mono)' }}>
@@ -164,7 +165,7 @@ function PoolCard({ pool, i, maxTvl }: { pool: Pool; i: number; maxTvl: number }
             <motion.button initial={{ y: 8 }} animate={{ y: 0 }} exit={{ y: 8 }}
               onClick={() => engine.sendToStrategy(pool.name)}
               className="w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em]"
-              style={{ background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.35)',
+              style={{ background: 'rgba(0,229,255,0.12)', border: `1px solid rgba(0,229,255,0.35)`,
                 color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}
               whileHover={{ background: 'rgba(0,229,255,0.2)' }} whileTap={{ scale: 0.97 }}>
               → Add to Strategy
@@ -241,7 +242,7 @@ function ILCalculator({ pools }: { pools: Pool[] }) {
           </div>
           <div className="relative h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <div className="absolute top-0 left-0 h-full rounded-full"
-              style={{ width: `${(posSize / 10000) * 100}%`, background: 'var(--cyan)', boxShadow: '0 0 6px rgba(0,229,255,0.5)' }} />
+              style={{ width: `${(posSize / 10000) * 100}%`, background: 'var(--cyan)', boxShadow: `0 0 6px ${theme.glow.strong}` }} />
             <input type="range" min={0} max={10000} step={100} value={posSize}
               onChange={e => setPosSize(Number(e.target.value))}
               className="absolute inset-0 w-full opacity-0 cursor-pointer z-10" />
@@ -275,14 +276,14 @@ function ILCalculator({ pools }: { pools: Pool[] }) {
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>IL Curve (price change →)</p>
           <ResponsiveContainer width="100%" height={120}>
             <LineChart data={IL_CURVE} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={theme.chart.grid} vertical={false} />
               <XAxis dataKey="change" stroke="transparent"
                 tick={{ fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 8 }} tickLine={false} interval={9} />
               <YAxis stroke="transparent"
                 tick={{ fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 8 }} tickLine={false}
                 tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip content={<ILTooltip />} />
-              <Line type="monotone" dataKey="il" stroke="var(--red)" strokeWidth={2} dot={false} isAnimationActive />
+              <Line type="monotone" dataKey="il" stroke={theme.chart.line3} strokeWidth={2} dot={false} isAnimationActive />
             </LineChart>
           </ResponsiveContainer>
         </div>

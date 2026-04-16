@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import LiveDot from './ui/LiveDot'
 import { TABS, TAB_AGENTS } from '../data/constants'
+import { theme } from '../styles/theme'
 
 // ── Route progress bar ────────────────────────────────────────────────────────
 function RouteProgressBar() {
@@ -175,9 +176,9 @@ export default function Navbar() {
           {/* Live badge — hide on smallest screens */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full flex-shrink-0"
             style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.15)' }}>
-            <LiveDot color="#00ff88" size="sm" />
+            <LiveDot color={theme.accent.success} size="sm" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]"
-              style={{ color: '#00ff88', fontFamily: 'var(--font-mono)' }}>
+              style={{ color: theme.accent.success, fontFamily: 'var(--font-mono)' }}>
               LIVE • BSC TESTNET
             </span>
           </div>

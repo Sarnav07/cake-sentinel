@@ -1,5 +1,6 @@
 // /src/data/constants.ts
 // Centralised constants used across the NEXUS data layer and UI
+import { theme } from '../styles/theme'
 
 export const PAIRS = ['BNB/USDC', 'CAKE/BNB', 'ETH/USDC', 'BTCB/USDT', 'XRP/USDT'] as const
 export type Pair = typeof PAIRS[number]
@@ -9,15 +10,7 @@ export const AGENT_NAMES = [
 ] as const
 export type AgentName = typeof AGENT_NAMES[number]
 
-export const AGENT_COLORS: Record<AgentName, string> = {
-  'Market Intel': '#00e5ff',
-  'Strategy':     '#a855f7',
-  'Execution':    '#f59e0b',
-  'Risk':         '#ff4444',
-  'Portfolio':    '#00ff88',
-  'Liquidity':    '#38bdf8',
-  'Simulation':   '#f472b6',
-}
+export const AGENT_COLORS: Record<AgentName, string> = theme.agent
 
 export const STRATEGY_TYPES = ['ARBITRAGE', 'TREND', 'MEAN-REVERSION'] as const
 export type StrategyType = typeof STRATEGY_TYPES[number]
@@ -52,10 +45,10 @@ export const TABS = [
 
 // ── Tab → Agent ownership breadcrumb ─────────────────────────────────────────
 export const TAB_AGENTS: Record<string, { name: string; color: string; icon: string; agentKey: string }> = {
-  market:    { name: 'Market Intelligence', color: '#00e5ff', icon: '◈', agentKey: 'Market Intel' },
-  strategy:  { name: 'Strategy Agent',      color: '#a855f7', icon: '◆', agentKey: 'Strategy'     },
-  execution: { name: 'Execution Agent',     color: '#f59e0b', icon: '▶', agentKey: 'Execution'    },
-  risk:      { name: 'Risk Management',     color: '#ff4444', icon: '⬡', agentKey: 'Risk'         },
-  portfolio: { name: 'Portfolio Agent',     color: '#00ff88', icon: '◉', agentKey: 'Portfolio'    },
-  liquidity: { name: 'Liquidity Agent',     color: '#3b82f6', icon: '◎', agentKey: 'Liquidity'   },
+  market:    { name: 'Market Intelligence', color: theme.tab.market,    icon: '◈', agentKey: 'Market Intel' },
+  strategy:  { name: 'Strategy Agent',      color: theme.tab.strategy,  icon: '◆', agentKey: 'Strategy'     },
+  execution: { name: 'Execution Agent',     color: theme.tab.execution, icon: '▶', agentKey: 'Execution'    },
+  risk:      { name: 'Risk Management',     color: theme.tab.risk,      icon: '⬡', agentKey: 'Risk'         },
+  portfolio: { name: 'Portfolio Agent',     color: theme.tab.portfolio, icon: '◉', agentKey: 'Portfolio'    },
+  liquidity: { name: 'Liquidity Agent',     color: theme.tab.liquidity, icon: '◎', agentKey: 'Liquidity'   },
 }

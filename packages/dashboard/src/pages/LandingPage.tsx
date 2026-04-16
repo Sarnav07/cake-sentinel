@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLivePnL, useIsInitializing } from '../context/NexusContext'
+import { theme } from '../styles/theme'
 
 // ── Canvas Particle Network ───────────────────────────────────────────────────
 function ParticleCanvas() {
@@ -58,7 +59,7 @@ function ParticleCanvas() {
       }
       for (const n of nodes) {
         ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2)
-        ctx.fillStyle = '#00e5ff'; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1
+        ctx.fillStyle = theme.accent.primary; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1
       }
       raf = requestAnimationFrame(tick)
     }
@@ -132,11 +133,11 @@ function BootSequence({ onDone }: { onDone: () => void }) {
               <span style={{
                 color: line === '> NEXUS ONLINE'
                   ? 'var(--cyan)'
-                  : 'rgba(255,255,255,0.65)',
+                  : theme.text.white65,
                 fontWeight: line === '> NEXUS ONLINE' ? 800 : 400,
                 fontSize: line === '> NEXUS ONLINE' ? 18 : 13,
                 letterSpacing: line === '> NEXUS ONLINE' ? '0.2em' : '0.05em',
-                textShadow: line === '> NEXUS ONLINE' ? '0 0 20px rgba(0,229,255,0.9)' : 'none',
+                textShadow: line === '> NEXUS ONLINE' ? `0 0 20px ${theme.glow.thumb}` : 'none',
               }}>
                 {line}
               </span>
@@ -182,7 +183,7 @@ export default function LandingPage() {
 
       {/* Radial glow */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,229,255,0.06) 0%, transparent 70%)'
+        background: `radial-gradient(ellipse 60% 50% at 50% 50%, ${theme.glow.card} 0%, transparent 70%)`
       }} />
 
       {/* ── Boot sequence overlay ── */}
@@ -210,7 +211,7 @@ export default function LandingPage() {
 
             {/* Boot log box */}
             <div className="rounded-xl p-6 min-w-[360px]"
-              style={{ background: 'rgba(8,11,18,0.85)', border: '1px solid rgba(0,229,255,0.15)', backdropFilter: 'blur(20px)' }}>
+              style={{ background: theme.bg.boot, border: `1px solid ${theme.border.faint}`, backdropFilter: 'blur(20px)' }}>
               <BootSequence onDone={() => {
                 setBootDone(true)
                 // Auto-navigate to /market after boot sequence finishes
@@ -231,11 +232,11 @@ export default function LandingPage() {
             {/* LIVE badge */}
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               className="flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-              style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.2)' }}>
+              style={{ background: `rgba(0,255,136,0.06)`, border: `1px solid rgba(0,255,136,0.2)` }}>
               <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full" style={{ background: '#00ff88' }} />
+                className="w-1.5 h-1.5 rounded-full" style={{ background: theme.accent.success }} />
               <span className="text-[11px] font-bold uppercase tracking-[0.25em]"
-                style={{ color: '#00ff88', fontFamily: 'var(--font-mono)' }}>
+                style={{ color: theme.accent.success, fontFamily: 'var(--font-mono)' }}>
                 Live • BSC Testnet
               </span>
             </motion.div>
@@ -251,7 +252,7 @@ export default function LandingPage() {
                     fontSize: 'clamp(72px, 12vw, 120px)', fontWeight: 900,
                     letterSpacing: '-0.04em', color: 'var(--cyan)',
                     fontFamily: 'var(--font-mono)',
-                    textShadow: '0 0 40px rgba(0,229,255,0.8), 0 0 80px rgba(0,229,255,0.3)',
+                    textShadow: `0 0 40px ${theme.glow.thumb}, 0 0 80px ${theme.glow.strong}`,
                     lineHeight: 1,
                   }}>{char}
                 </motion.span>
@@ -270,7 +271,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.6 }}
               onClick={() => navigate('/market')}
-              whileHover={{ backgroundColor: 'rgba(0,229,255,1)', color: '#080b12', scale: 1.02, boxShadow: '0 0 30px rgba(0,229,255,0.4)' }}
+              whileHover={{ backgroundColor: theme.accent.primary, color: theme.bg.base, scale: 1.02, boxShadow: `0 0 30px ${theme.glow.strong}` }}
               whileTap={{ scale: 0.97 }}
               className="mt-4 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-[0.3em] transition-all duration-200"
               style={{ border: '1px solid var(--cyan)', color: 'var(--cyan)', background: 'transparent', fontFamily: 'var(--font-mono)' }}>

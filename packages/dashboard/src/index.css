@@ -5,23 +5,42 @@
 @tailwind utilities;
 
 /* ── CSS Variables ─────────────────────────────────────────────────────────── */
+/* Keep in sync with src/styles/theme.ts — change here AND there when retheming */
 :root {
-  --bg-primary:    #080b12;
-  --bg-card:       rgba(13, 18, 30, 0.9);
-  --bg-card-hover: rgba(18, 25, 42, 0.95);
-  --border-dim:    rgba(0, 229, 255, 0.08);
-  --border-accent: rgba(0, 229, 255, 0.25);
-  --cyan:          #00e5ff;
-  --cyan-dim:      rgba(0, 229, 255, 0.6);
-  --magenta:       #ff2d78;
-  --purple:        #a855f7;
-  --green:         #00ff88;
-  --amber:         #f59e0b;
-  --red:           #ff4444;
-  --text-primary:  #e8eaf0;
-  --text-secondary:#7a8499;
-  --text-muted:    #3d4558;
+  /* ── Backgrounds ── */
+  --bg-primary:    #0b0e14;
+  --bg-card:       rgba(14, 20, 32, 0.95);
+  --bg-card-hover: rgba(20, 28, 44, 0.95);
+
+  /* ── Borders ── */
+  --border-dim:    rgba(126,200,227,0.08);   /* derived from --cyan */
+  --border-accent: rgba(126,200,227,0.25);   /* derived from --cyan */
+
+  /* ── Accent palette ── */
+  --cyan:          #7ec8e3;   /* ← PRIMARY ACCENT — change to recolor UI */
+  --cyan-dim:      rgba(126,200,227,0.55);
+  --magenta:       #8899cc;
+  --purple:        #9b7fe8;
+  --green:         #3ecf8e;
+  --amber:         #e6a020;
+  --red:           #e05c5c;
+
+  /* ── Text ── */
+  --text-primary:  #d4dce8;
+  --text-secondary:#7a8fa8;
+  --text-muted:    #3a4a5c;
+
+  /* ── Typography ── */
   --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Tailwind CSS variable aliases (used via tailwind.config.js extend) ── */
+  --color-accent:   #7ec8e3;
+  --color-success:  #3ecf8e;
+  --color-warning:  #e6a020;
+  --color-danger:   #e05c5c;
+  --color-sim:      #9b7fe8;
+  --color-bg-base:  #0b0e14;
+  --color-bg-panel: rgba(14, 20, 32, 0.95);
 }
 
 /* ── Base Reset ────────────────────────────────────────────────────────────── */
@@ -40,9 +59,9 @@ body {
 /* ── Custom Scrollbar ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar          { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track    { background: transparent; }
-::-webkit-scrollbar-thumb    { background: rgba(0,229,255,0.2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.4); }
-* { scrollbar-width: thin; scrollbar-color: rgba(0,229,255,0.2) transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(126,200,227,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(126,200,227,0.4); }
+* { scrollbar-width: thin; scrollbar-color: rgba(126,200,227,0.2) transparent; }
 
 /* ── Focus ring (accessibility) ────────────────────────────────────────────── */
 *:focus-visible {
@@ -69,7 +88,7 @@ button:active, [role="button"]:active { transform: scale(0.97); }
 .hover-lift:hover {
   transform: translateY(-2px);
   border-color: var(--border-accent) !important;
-  box-shadow: 0 8px 30px rgba(0,229,255,0.06);
+  box-shadow: 0 8px 30px rgba(126,200,227,0.06);
 }
 
 /* ── Scanline overlay ──────────────────────────────────────────────────────── */
@@ -90,15 +109,15 @@ button:active, [role="button"]:active { transform: scale(0.97); }
 
 /* ── Pulsing dot ───────────────────────────────────────────────────────────── */
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
-  50%       { opacity: 0.8; box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62, 207, 142, 0.4); }
+  50%       { opacity: 0.8; box-shadow: 0 0 0 6px rgba(62, 207, 142, 0); }
 }
 .pulse-dot { animation: pulse-dot 2s infinite; }
 
 /* ── NEXUS logo glow ───────────────────────────────────────────────────────── */
 @keyframes nexus-glow {
-  0%, 100% { text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0,229,255,0.3); }
-  50%       { text-shadow: 0 0 16px var(--cyan), 0 0 50px rgba(0,229,255,0.5); }
+  0%, 100% { text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(126,200,227,0.3); }
+  50%       { text-shadow: 0 0 16px var(--cyan), 0 0 50px rgba(126,200,227,0.5); }
 }
 .nexus-glow { animation: nexus-glow 3s ease-in-out infinite; }
 

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { NexusProvider } from './context/NexusContext'
 import { useNexus, useBreachAlert } from './context/NexusContext'
+import { theme } from './styles/theme'
 import Navbar           from './components/Navbar'
 import AgentStatusBar   from './components/shared/AgentStatusBar'
 import LandingPage      from './pages/LandingPage'
@@ -31,8 +32,8 @@ function FirewallBanner() {
           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
           className="flex items-center justify-between px-6 py-2.5 z-30 relative"
           style={{
-            background: 'linear-gradient(90deg, rgba(180,10,30,0.95) 0%, rgba(220,30,50,0.95) 100%)',
-            borderBottom: '1px solid rgba(255,80,80,0.5)',
+            background: theme.breach.bg,
+            borderBottom: `1px solid ${theme.border.breach}`,
             backdropFilter: 'blur(10px)',
           }}
         >
@@ -47,7 +48,7 @@ function FirewallBanner() {
             </span>
             {breachAlert && (
               <span className="text-[9px] px-2 py-0.5 rounded"
-                style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)',
+                style={{ background: theme.bg.elevated15, color: theme.text.white,
                   fontFamily: 'var(--font-mono)' }}>
                 {breachAlert.type}: {breachAlert.value}{breachAlert.type === 'DRAWDOWN' ? '%' : ''} {'>'} {breachAlert.limit * 0.9}{breachAlert.type === 'DRAWDOWN' ? '%' : ''} limit
               </span>
@@ -58,8 +59,8 @@ function FirewallBanner() {
             whileHover={{ background: 'rgba(255,255,255,0.25)', scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] text-white flex-shrink-0"
-            style={{ border: '1px solid rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)',
-              background: 'rgba(255,255,255,0.1)' }}>
+            style={{ border: `1px solid ${theme.border.white40}`, fontFamily: 'var(--font-mono)',
+              background: theme.border.subtle }}>
             ↺ Reset & Rearm
           </motion.button>
         </motion.div>
@@ -95,11 +96,11 @@ function AppRoutes() {
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%)', filter: 'blur(70px)', opacity: 0.7 }} />
+          style={{ background: `radial-gradient(circle, ${theme.accent.orbCyan} 0%, transparent 70%)`, filter: 'blur(70px)', opacity: 0.7 }} />
         <div className="absolute bottom-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)', filter: 'blur(80px)', opacity: 0.5 }} />
+          style={{ background: `radial-gradient(circle, ${theme.accent.orbPurple} 0%, transparent 70%)`, filter: 'blur(80px)', opacity: 0.5 }} />
         <div className="absolute top-[40%] left-[35%] w-[400px] h-[400px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(255,45,120,0.08) 0%, transparent 70%)', filter: 'blur(60px)', opacity: 0.4 }} />
+          style={{ background: `radial-gradient(circle, ${theme.accent.orbMagenta} 0%, transparent 70%)`, filter: 'blur(60px)', opacity: 0.4 }} />
       </div>
 
       {/* Navbar + agent bar + firewall banner — only shown on dashboard routes */}

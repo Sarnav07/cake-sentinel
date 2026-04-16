@@ -13,6 +13,7 @@ import {
   usePositionExposure,
   useRiskMetrics,
 } from '../context/NexusContext'
+import { theme } from '../styles/theme'
 
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 function Toggle({ on, onToggle, tripped }: { on: boolean; onToggle: () => void; tripped?: boolean }) {
@@ -30,7 +31,7 @@ function Toggle({ on, onToggle, tripped }: { on: boolean; onToggle: () => void; 
         style={{
           background:  on ? 'rgba(0,229,255,0.2)' : 'rgba(255,68,68,0.15)',
           border:      on ? '1px solid rgba(0,229,255,0.4)' : '1px solid rgba(255,68,68,0.4)',
-          boxShadow:   on ? '0 0 8px rgba(0,229,255,0.3)' : '0 0 8px rgba(255,68,68,0.2)',
+          boxShadow:   on ? `0 0 8px ${theme.glow.track}` : `0 0 8px ${theme.glow.danger}`,
         }}>
         <motion.div animate={{ x: on ? 22 : 2 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -136,11 +137,11 @@ function DrawdownChart() {
         <AreaChart data={history} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="#ff4444" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#ff4444" stopOpacity={0}   />
+              <stop offset="0%"   stopColor={theme.chart.line3} stopOpacity={0.4} />
+              <stop offset="100%" stopColor={theme.chart.line3} stopOpacity={0}   />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={theme.chart.grid} vertical={false} />
           <XAxis dataKey="time" hide />
           <YAxis stroke="transparent"
             tick={{ fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 10 }}
@@ -158,7 +159,7 @@ function DrawdownChart() {
             formatter={(v: number) => [`${v.toFixed(2)}%`, 'Drawdown']}
             contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-accent)',
               borderRadius: 8, fontFamily: 'var(--font-mono)', color: 'var(--red)' }} />
-          <Area type="monotone" dataKey="value" stroke="#ff4444" strokeWidth={1.5}
+          <Area type="monotone" dataKey="value" stroke={theme.chart.line3} strokeWidth={1.5}
             fill="url(#ddGrad)" isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>

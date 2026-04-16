@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { theme } from '../../styles/theme'
 
 const sizeMap: Record<string, string> = {
   sm:  'text-sm',
@@ -31,7 +32,7 @@ export default function MonoValue({ value, color = 'var(--text-primary)', size =
     const numPrev = typeof prev  === 'number' ? prev  : parseFloat(String(prev).replace(/[^0-9.-]/g, ''))
     if (isNaN(numVal) || isNaN(numPrev)) return
 
-    const flashColor = numVal > numPrev ? 'rgba(0,255,136,0.18)' : 'rgba(255,68,68,0.18)'
+    const flashColor = numVal > numPrev ? 'rgba(0,255,136,0.18)' : 'rgba(255,68,68,0.18)'   // theme.accent.success / danger @ 18% alpha
     setBg(flashColor)
     const t = setTimeout(() => setBg(null), 400)
     return () => clearTimeout(t)

@@ -1,11 +1,12 @@
 import React from 'react'
+import { theme } from '../../styles/theme'
 
 interface SectionTitleProps {
   title: string
   dotColor?: string
 }
 
-export default function SectionTitle({ title, dotColor = '#00e5ff' }: SectionTitleProps) {
+export default function SectionTitle({ title, dotColor = theme.accent.primary }: SectionTitleProps) {
   return (
     <div className="flex items-center gap-2">
       <span
