@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { engine, EngineState, AgentName, Signal, MarketRegime, RegimeHistoryEntry, StrategyPerf } from '../data/MockDataEngine'
+import {
+  engine, EngineState, AgentName,
+  Signal, MarketRegime, RegimeHistoryEntry, StrategyPerf,
+  RiskLimits, CircuitBreakers, DrawdownPoint, PositionExposure,
+} from '../data/MockDataEngine'
 
 // ── Context shape ─────────────────────────────────────────────────────────────
 interface NexusCtx {
@@ -7,9 +11,12 @@ interface NexusCtx {
   // Risk Guardian ARMED state
   armed: boolean
   toggleArmed: () => void
-  // Circuit breakers
-  breakers: Record<string, boolean>
-  toggleBreaker: (key: string) => void
+  // Circuit breakers (global, delegated to engine)
+  circuitBreakers: CircuitBreakers
+  setCircuitBreakers: (b: Partial<CircuitBreakers>) => void
+  // Risk limits (slider values, delegated to engine)
+  riskLimits: RiskLimits
+  setRiskLimits: (l: Partial<RiskLimits>) => void
   // Tab-level state
   selectedStrategy: string | null
   setSelectedStrategy: (s: string | null) => void
@@ -33,12 +40,6 @@ const Ctx = createContext<NexusCtx | null>(null)
 export function NexusProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<EngineState>(engine.state)
   const [armed, setArmed] = useState(true)
-  const [breakers, setBreakers] = useState<Record<string, boolean>>({
-    'maxDrawdown':    true,
-    'flashCrash':     true,
-    'oracleFailure':  true,
-    'depegAlert':     true,
-  })
   const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null)
   const [activePairFilter, setActivePairFilter]   = useState('All Pairs')
   const [activeSideFilter, setActiveSideFilter]   = useState('All Sides')
@@ -51,13 +52,18 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const toggleArmed = useCallback(() => setArmed(v => !v), [])
-  const toggleBreaker = useCallback((key: string) => {
-    setBreakers(prev => ({ ...prev, [key]: !prev[key] }))
-  }, [])
+
+  // Delegate setters to engine so they propagate to all subscribers
+  const setRiskLimits    = useCallback((l: Partial<RiskLimits>)    => engine.setRiskLimits(l), [])
+  const setCircuitBreakers = useCallback((b: Partial<CircuitBreakers>) => engine.setCircuitBreakers(b), [])
 
   return (
     <Ctx.Provider value={{
-      state, armed, toggleArmed, breakers, toggleBreaker,
+      state, armed, toggleArmed,
+      circuitBreakers: state.circuitBreakers,
+      setCircuitBreakers,
+      riskLimits: state.riskLimits,
+      setRiskLimits,
       selectedStrategy, setSelectedStrategy,
       activePairFilter, setActivePairFilter,
       activeSideFilter, setActiveSideFilter,
@@ -134,4 +140,24 @@ export function useMarketRegime() {
 export function useStrategyPerformance() {
   const { state } = useNexus()
   return state.strategyPerformance
+}
+
+export function useDrawdownHistory() {
+  const { state } = useNexus()
+  return state.drawdownHistory
+}
+
+export function useRiskLimits() {
+  const { nexusCtx } = { nexusCtx: useNexus() }
+  return { riskLimits: nexusCtx.riskLimits, setRiskLimits: nexusCtx.setRiskLimits }
+}
+
+export function useCircuitBreakers() {
+  const ctx = useNexus()
+  return { circuitBreakers: ctx.circuitBreakers, setCircuitBreakers: ctx.setCircuitBreakers }
+}
+
+export function usePositionExposure() {
+  const { state } = useNexus()
+  return state.positionExposure
 }

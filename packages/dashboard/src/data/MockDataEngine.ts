@@ -56,6 +56,28 @@ export interface StrategyPerf {
   status: 'ACTIVE' | 'PAUSED'
 }
 
+export interface DrawdownPoint { time: string; value: number }
+
+export interface RiskLimits {
+  drawdownLimit: number   // 0–15%
+  positionSize:  number   // 0–500 USD
+  anomalyScore:  number   // 0–100
+}
+
+export interface CircuitBreakers {
+  maxDrawdown: boolean
+  flashCrash:  boolean
+  oracleGuard: boolean
+  depegAlert:  boolean
+}
+
+export interface PositionExposure {
+  token:        string
+  exposure:     string
+  portfolioPct: string
+  riskLevel:    'LOW' | 'MEDIUM' | 'HIGH'
+}
+
 export type ActivityEntry = {
   id: string; ts: string; agent: AgentName; message: string; value?: string
 }
@@ -78,6 +100,11 @@ export interface EngineState {
   marketRegime: MarketRegime
   regimeHistory: RegimeHistoryEntry[]
   strategyPerformance: StrategyPerf[]
+  // Risk tab state
+  drawdownHistory: DrawdownPoint[]
+  riskLimits: RiskLimits
+  circuitBreakers: CircuitBreakers
+  positionExposure: PositionExposure[]
 }
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
@@ -131,9 +158,16 @@ export class MockDataEngine {
 
   // track regime index for rotation
   private _regimeIdx = 0
+  // track cumulative drawdown for history
+  private _cumulativeDD = 0
 
   constructor() {
     const now = new Date().toLocaleTimeString('en-US', { hour12: false })
+    // seed 30-point drawdown history
+    const ddHistory: DrawdownPoint[] = Array.from({ length: 30 }, (_, i) => ({
+      time: now,
+      value: -(Math.abs(Math.sin(i / 6)) * 5 + Math.random() * 1.2),
+    }))
     this.state = {
       prices: {
         'BNB/USDC':  this._initPrice(312.40),
@@ -159,6 +193,15 @@ export class MockDataEngine {
         { regime: 'TRENDING',       timestamp: now, duration: '22m' },
       ],
       strategyPerformance: INIT_STRATEGY_PERF,
+      // Risk tab
+      drawdownHistory: ddHistory,
+      riskLimits: { drawdownLimit: 15, positionSize: 320, anomalyScore: 70 },
+      circuitBreakers: { maxDrawdown: true, flashCrash: true, oracleGuard: true, depegAlert: true },
+      positionExposure: [
+        { token: 'WBNB', exposure: '$845.20', portfolioPct: '58.3%', riskLevel: 'LOW'    },
+        { token: 'USDT', exposure: '$412.00', portfolioPct: '28.4%', riskLevel: 'LOW'    },
+        { token: 'CAKE', exposure: '$193.40', portfolioPct: '13.3%', riskLevel: 'MEDIUM' },
+      ],
     }
   }
 
@@ -186,6 +229,10 @@ export class MockDataEngine {
     this.timers.push(setInterval(() => this._tickSignals(), 8000))
     // Regime rotation: every 45s
     this.timers.push(setInterval(() => this._tickRegime(), 45000))
+    // Drawdown history: every 5s
+    this.timers.push(setInterval(() => this._tickDrawdown(), 5000))
+    // Flash crash trip: every 120s
+    this.timers.push(setInterval(() => this._tripFlashCrash(), 120000))
   }
 
   stop() {
@@ -262,6 +309,19 @@ export class MockDataEngine {
     const s = this.state.pnl
     const newTradeCount = s.tradeCount + 1
     const newWinCount   = isWin ? s.winCount + 1 : s.winCount
+
+    // Update position exposure to reflect new trade token
+    const baseToken = pair.split('/')[0]
+    const exposure  = this.state.positionExposure.map(e => {
+      if (e.token === baseToken || e.token === 'W' + baseToken) {
+        const delta = Math.abs(pnl) * 0.3
+        const raw   = parseFloat(e.exposure.replace('$','')) + (isWin ? delta : -delta)
+        const capped = Math.max(50, raw)
+        return { ...e, exposure: `$${capped.toFixed(2)}` }
+      }
+      return e
+    })
+
     this.state = {
       ...this.state,
       trades: [trade, ...this.state.trades].slice(0, 50),
@@ -273,6 +333,7 @@ export class MockDataEngine {
         winCount:    newWinCount,
         tradeCount:  newTradeCount,
       },
+      positionExposure: exposure,
     }
     this._activateAgent('Execution')
     this._emit()
@@ -280,15 +341,24 @@ export class MockDataEngine {
 
   private _tickRisk() {
     const r = this.state.risk
-    this.state = {
-      ...this.state,
-      risk: {
-        drawdown:     Math.max(0, Math.min(15, r.drawdown + randomNormal(0, 0.1))),
-        anomaly:      Math.max(0, Math.min(100, r.anomaly + randomNormal(0, 1.5))),
-        sharpe:       Math.max(0, r.sharpe + randomNormal(0, 0.02)),
-        positionSize: Math.max(0, Math.min(500, r.positionSize + randomNormal(0, 5))),
-      },
+    const newAnomaly = Math.max(0, Math.min(100, r.anomaly + randomNormal(0, 1.5)))
+    const newRisk = {
+      drawdown:     Math.max(0, Math.min(15, r.drawdown + randomNormal(0, 0.1))),
+      anomaly:      newAnomaly,
+      sharpe:       Math.max(0, r.sharpe + randomNormal(0, 0.02)),
+      positionSize: Math.max(0, Math.min(500, r.positionSize + randomNormal(0, 5))),
     }
+    // Auto-disarm: if anomaly breaches riskLimits.anomalyScore threshold, trip maxDrawdown breaker
+    const breakers = { ...this.state.circuitBreakers }
+    if (newAnomaly > this.state.riskLimits.anomalyScore && breakers.maxDrawdown) {
+      breakers.maxDrawdown = false
+      // schedule auto-reset after 5s
+      setTimeout(() => {
+        this.state = { ...this.state, circuitBreakers: { ...this.state.circuitBreakers, maxDrawdown: true } }
+        this._emit()
+      }, 5000)
+    }
+    this.state = { ...this.state, risk: newRisk, circuitBreakers: breakers }
     this._activateAgent('Risk')
     this._emit()
   }
@@ -373,6 +443,52 @@ export class MockDataEngine {
 
     this.state = { ...this.state, signals, strategyPerformance: perf }
     this._activateAgent('Strategy')
+    this._emit()
+  }
+
+  private _tickDrawdown() {
+    const r = this.state.risk
+    // cumulative drawdown drifts based on recent trade pnl direction
+    const lastPnl = this.state.trades[0]?.pnl ?? 0
+    this._cumulativeDD = Math.max(-15, Math.min(0,
+      this._cumulativeDD + (lastPnl < 0 ? randomNormal(-0.3, 0.15) : randomNormal(0.1, 0.08))
+    ))
+    const point: DrawdownPoint = {
+      time:  new Date().toLocaleTimeString('en-US', { hour12: false }),
+      value: parseFloat(this._cumulativeDD.toFixed(2)),
+    }
+    this.state = {
+      ...this.state,
+      drawdownHistory: [...this.state.drawdownHistory.slice(1), point],
+    }
+    this._emit()
+  }
+
+  private _tripFlashCrash() {
+    // Momentarily trip flashCrash to false for 3s to simulate a detection event
+    this.state = {
+      ...this.state,
+      circuitBreakers: { ...this.state.circuitBreakers, flashCrash: false },
+    }
+    this._emit()
+    setTimeout(() => {
+      this.state = {
+        ...this.state,
+        circuitBreakers: { ...this.state.circuitBreakers, flashCrash: true },
+      }
+      this._emit()
+    }, 3000)
+  }
+
+  // public setter — called from context when user moves a slider
+  setRiskLimits(limits: Partial<RiskLimits>) {
+    this.state = { ...this.state, riskLimits: { ...this.state.riskLimits, ...limits } }
+    this._emit()
+  }
+
+  // public setter — called from context when user flips a breaker
+  setCircuitBreakers(breakers: Partial<CircuitBreakers>) {
+    this.state = { ...this.state, circuitBreakers: { ...this.state.circuitBreakers, ...breakers } }
     this._emit()
   }
 
