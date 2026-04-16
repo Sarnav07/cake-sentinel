@@ -21,6 +21,41 @@ export interface Pool {
   fee: string; tvl: number; vol24h: number; aprRaw: number; apr: string; arb: boolean
 }
 
+export interface Signal {
+  id: string
+  pair: string
+  strategy: 'ARBITRAGE' | 'TREND' | 'MEAN-REVERSION'
+  expectedProfit: number
+  confidence: number
+  riskScore: number
+  entryPrice: number
+  exitPrice: number
+  timestamp: string
+}
+
+export type RegimeLabel = 'TRENDING' | 'MEAN-REVERTING' | 'HIGH-VOLATILITY' | 'CHOPPY'
+
+export interface MarketRegime {
+  current: RegimeLabel
+  confidence: number
+  updatedAt: string
+}
+
+export interface RegimeHistoryEntry {
+  regime: RegimeLabel
+  timestamp: string
+  duration: string
+}
+
+export interface StrategyPerf {
+  name: string
+  trades: number
+  winPct: string
+  avgProfit: string
+  total: string
+  status: 'ACTIVE' | 'PAUSED'
+}
+
 export type ActivityEntry = {
   id: string; ts: string; agent: AgentName; message: string; value?: string
 }
@@ -38,6 +73,11 @@ export interface EngineState {
   pools: Pool[]
   activity: ActivityEntry[]
   agents: AgentStatus[]
+  // Strategy tab state
+  signals: Signal[]
+  marketRegime: MarketRegime
+  regimeHistory: RegimeHistoryEntry[]
+  strategyPerformance: StrategyPerf[]
 }
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
@@ -54,6 +94,23 @@ const AGENT_COLORS: Record<AgentName, string> = {
   'Liquidity':    '#38bdf8',
   'Simulation':   '#f472b6',
 }
+
+const REGIME_SEQUENCE: RegimeLabel[] = ['TRENDING', 'MEAN-REVERTING', 'HIGH-VOLATILITY', 'CHOPPY']
+const STRATEGY_TEMPLATES: Signal[] = [
+  { id: 's1', pair: 'BNB/USDC',  strategy: 'ARBITRAGE',     expectedProfit: 3.89, confidence: 87, riskScore: 2, entryPrice: 312.40, exitPrice: 315.20, timestamp: '' },
+  { id: 's2', pair: 'CAKE/BNB',  strategy: 'TREND',          expectedProfit: 2.15, confidence: 74, riskScore: 3, entryPrice: 2.841,  exitPrice: 2.910,  timestamp: '' },
+  { id: 's3', pair: 'ETH/USDC',  strategy: 'MEAN-REVERSION', expectedProfit: 5.60, confidence: 68, riskScore: 2, entryPrice: 1847.2, exitPrice: 1856.8, timestamp: '' },
+  { id: 's4', pair: 'BNB/BUSD',  strategy: 'ARBITRAGE',     expectedProfit: 1.20, confidence: 61, riskScore: 1, entryPrice: 311.90, exitPrice: 313.10, timestamp: '' },
+  { id: 's5', pair: 'BTCB/USDT', strategy: 'TREND',          expectedProfit: 9.88, confidence: 55, riskScore: 4, entryPrice: 43201,  exitPrice: 43450,  timestamp: '' },
+  { id: 's6', pair: 'XRP/USDT',  strategy: 'MEAN-REVERSION', expectedProfit: 0.74, confidence: 49, riskScore: 3, entryPrice: 0.521,  exitPrice: 0.528,  timestamp: '' },
+]
+
+const INIT_STRATEGY_PERF: StrategyPerf[] = [
+  { name: 'Arbitrage Scanner', trades: 142, winPct: '71.8%', avgProfit: '+$1.24', total: '+$176.08', status: 'ACTIVE'  },
+  { name: 'Trend Follower',    trades:  58, winPct: '65.5%', avgProfit: '+$3.41', total: '+$197.78', status: 'ACTIVE'  },
+  { name: 'Mean Reversion',    trades:  34, winPct: '58.8%', avgProfit: '+$0.97', total: '+$32.98',  status: 'PAUSED'  },
+  { name: 'Momentum Engine',   trades:   0, winPct: '—',     avgProfit: '—',      total: '$0.00',    status: 'PAUSED'  },
+]
 
 const POOL_INIT: Pool[] = [
   { name: 'BNB/BUSD',  version: 'V3', tier: 'BLUE-CHIP', fee: '0.05%', tvl: 1.08e12, vol24h: 1.24e6,  aprRaw: 14.1,  apr: '14.1%',  arb: false },
@@ -72,7 +129,11 @@ export class MockDataEngine {
   private timers: ReturnType<typeof setInterval>[] = []
   state: EngineState
 
+  // track regime index for rotation
+  private _regimeIdx = 0
+
   constructor() {
+    const now = new Date().toLocaleTimeString('en-US', { hour12: false })
     this.state = {
       prices: {
         'BNB/USDC':  this._initPrice(312.40),
@@ -88,6 +149,16 @@ export class MockDataEngine {
       pools: POOL_INIT.map(p => ({ ...p })),
       activity: [],
       agents: (Object.entries(AGENT_COLORS) as [AgentName, string][]).map(([name, color]) => ({ name, active: false, color })),
+      signals: STRATEGY_TEMPLATES.map(s => ({ ...s, timestamp: now })),
+      marketRegime: { current: 'TRENDING', confidence: 82, updatedAt: now },
+      regimeHistory: [
+        { regime: 'TRENDING',       timestamp: now, duration: '12m' },
+        { regime: 'HIGH-VOLATILITY',timestamp: now, duration: '5m'  },
+        { regime: 'MEAN-REVERTING', timestamp: now, duration: '18m' },
+        { regime: 'CHOPPY',         timestamp: now, duration: '9m'  },
+        { regime: 'TRENDING',       timestamp: now, duration: '22m' },
+      ],
+      strategyPerformance: INIT_STRATEGY_PERF,
     }
   }
 
@@ -111,6 +182,10 @@ export class MockDataEngine {
     this.timers.push(setInterval(() => this._generateActivity(), 3000))
     // Agent flash: every 2s
     this.timers.push(setInterval(() => this._tickAgents(), 2000))
+    // Signal refresh: every 8s
+    this.timers.push(setInterval(() => this._tickSignals(), 8000))
+    // Regime rotation: every 45s
+    this.timers.push(setInterval(() => this._tickRegime(), 45000))
   }
 
   stop() {
@@ -273,6 +348,53 @@ export class MockDataEngine {
       this._activateAgent(names[Math.floor(Math.random() * names.length)])
       this._emit()
     }
+  }
+
+  private _tickSignals() {
+    const now = nowStr()
+    const signals: Signal[] = STRATEGY_TEMPLATES.map(s => ({
+      ...s,
+      // shuffle expectedProfit ±$0.50
+      expectedProfit: parseFloat((s.expectedProfit + (Math.random() - 0.5)).toFixed(2)),
+      // drift confidence ±3
+      confidence: Math.max(30, Math.min(99, s.confidence + Math.round((Math.random() - 0.5) * 6))),
+      // update live entry price from engine
+      entryPrice: this.state.prices[s.pair]?.price ?? s.entryPrice,
+      timestamp: now,
+    }))
+    // keep sorted by confidence desc
+    signals.sort((a, b) => b.confidence - a.confidence)
+
+    // update strategy perf trade count on winner
+    const perf = this.state.strategyPerformance.map(p => p.status === 'ACTIVE'
+      ? { ...p, trades: p.trades + Math.round(Math.random()) }
+      : p
+    )
+
+    this.state = { ...this.state, signals, strategyPerformance: perf }
+    this._activateAgent('Strategy')
+    this._emit()
+  }
+
+  private _tickRegime() {
+    const prev = this.state.marketRegime
+    this._regimeIdx = (this._regimeIdx + 1) % REGIME_SEQUENCE.length
+    const next = REGIME_SEQUENCE[this._regimeIdx]
+    const now = nowStr()
+
+    const entry: RegimeHistoryEntry = {
+      regime: prev.current,
+      timestamp: prev.updatedAt,
+      duration: `${Math.floor(Math.random() * 20 + 5)}m`,
+    }
+
+    this.state = {
+      ...this.state,
+      marketRegime: { current: next, confidence: Math.floor(60 + Math.random() * 35), updatedAt: now },
+      regimeHistory: [entry, ...this.state.regimeHistory].slice(0, 5),
+    }
+    this._activateAgent('Market Intel')
+    this._emit()
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { engine, EngineState, AgentName } from '../data/MockDataEngine'
+import { engine, EngineState, AgentName, Signal, MarketRegime, RegimeHistoryEntry, StrategyPerf } from '../data/MockDataEngine'
 
 // ── Context shape ─────────────────────────────────────────────────────────────
 interface NexusCtx {
@@ -20,6 +20,11 @@ interface NexusCtx {
   // Agent detail sidebar
   sidebarAgent: AgentName | null
   setSidebarAgent: (a: AgentName | null) => void
+  // Strategy tab shortcuts (derived from state)
+  signals: Signal[]
+  marketRegime: MarketRegime
+  regimeHistory: RegimeHistoryEntry[]
+  strategyPerformance: StrategyPerf[]
 }
 
 const Ctx = createContext<NexusCtx | null>(null)
@@ -57,6 +62,11 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
       activePairFilter, setActivePairFilter,
       activeSideFilter, setActiveSideFilter,
       sidebarAgent, setSidebarAgent,
+      // Strategy tab shortcuts
+      signals:             state.signals,
+      marketRegime:        state.marketRegime,
+      regimeHistory:       state.regimeHistory,
+      strategyPerformance: state.strategyPerformance,
     }}>
       {children}
     </Ctx.Provider>
@@ -109,4 +119,19 @@ export function useActivityFeed() {
 export function useAgentStatuses() {
   const { state } = useNexus()
   return state.agents
+}
+
+export function useSignals() {
+  const { state } = useNexus()
+  return state.signals
+}
+
+export function useMarketRegime() {
+  const { state } = useNexus()
+  return { regime: state.marketRegime, history: state.regimeHistory }
+}
+
+export function useStrategyPerformance() {
+  const { state } = useNexus()
+  return state.strategyPerformance
 }
