@@ -23,6 +23,7 @@ function TradeDrawer({ trade, onClose }: { trade: Trade; onClose: () => void }) 
     { label: 'Net P&L',      value: `${(trade.pnl - trade.gas * 310).toFixed(2) >= '0' ? '+' : ''}$${(trade.pnl - trade.gas * 310).toFixed(2)}` },
     { label: 'Route',        value: `${trade.pair} via PancakeSwap V3` },
     { label: 'Status',       value: trade.status },
+    { label: 'Type',         value: trade.simulated ? '[SIM] Simulated' : 'Live Trade' },
   ]
 
   return (
@@ -304,7 +305,15 @@ export default function ExecutionPage() {
                           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,255,0.03)')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                           <td className="px-4 py-3 text-[10px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{row.time}</td>
-                          <td className="px-4 py-3 text-[11px] font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{row.pair}</td>
+                          <td className="px-4 py-3 text-[11px] font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                            {row.pair}
+                            {row.simulated && (
+                              <span className="ml-2 px-1 py-0.5 rounded text-[8px] font-bold"
+                                style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--amber)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                                SIM
+                              </span>
+                            )}
+                          </td>
                           <td className="px-4 py-3">
                             <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{
                               fontFamily: 'var(--font-mono)',

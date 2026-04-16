@@ -23,7 +23,17 @@ const REGIME_CONFIG: Record<RegimeLabel, { color: string; glow: string }> = {
 
 // ── Signal Card ───────────────────────────────────────────────────────────────
 function SignalCard({ s, i, flash }: { s: Signal; i: number; flash: boolean }) {
+  const { demo, armed } = useNexus()
   const profit = s.expectedProfit
+  const [executing, setExecuting] = useState(false)
+
+  const handleExecute = async () => {
+    if (!armed || executing) return
+    setExecuting(true)
+    await demo.executeSignal(s)
+    setTimeout(() => setExecuting(false), 1000)
+  }
+
   return (
     <motion.div
       layout
@@ -102,12 +112,15 @@ function SignalCard({ s, i, flash }: { s: Signal; i: number; flash: boolean }) {
           </div>
         </div>
         <motion.button
+          onClick={handleExecute}
+          disabled={!armed || executing}
           whileHover={{ background: 'rgba(0,229,255,0.15)', boxShadow: '0 0 12px rgba(0,229,255,0.3)' }}
           whileTap={{ scale: 0.95 }}
           className="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] transition-all"
-          style={{ border: '1px solid rgba(0,229,255,0.35)', color: 'var(--cyan)',
-            fontFamily: 'var(--font-mono)', background: 'transparent' }}>
-          Execute
+          style={{ border: '1px solid rgba(0,229,255,0.35)', color: executing || !armed ? 'var(--text-muted)' : 'var(--cyan)',
+            fontFamily: 'var(--font-mono)', background: 'transparent',
+            opacity: (!armed || executing) ? 0.5 : 1, cursor: (!armed || executing) ? 'not-allowed' : 'pointer' }}>
+          {executing ? 'Executing...' : 'Execute'}
         </motion.button>
       </div>
     </motion.div>

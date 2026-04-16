@@ -5,6 +5,7 @@ import {
   RiskLimits, CircuitBreakers, DrawdownPoint, PositionExposure,
   EquityPoint, TradeBucket, StrategyBreakdown, BreachAlert,
 } from '../data/MockDataEngine'
+import * as agentOrchestrator from '../agents/AgentOrchestrator'
 
 // ── Context shape ─────────────────────────────────────────────────────────────
 interface NexusCtx {
@@ -44,6 +45,18 @@ interface NexusCtx {
   sendToStrategy: (poolName: string) => void
   // Boot state
   isInitializing: boolean
+  // Demo integration
+  demo: {
+    runDemoSequence: (onStep: (n: number, msg: string) => void) => Promise<void>
+    setAutoExecute: (val: boolean) => void
+    setSignalFrequency: (val: number) => void
+    forceTrade: () => void
+    triggerBreach: () => void
+    resetAll: () => void
+    rearm: () => void
+    executeSignal: (s: any) => Promise<any>
+  }
+  realBNBPrice: number | null
 }
 
 const Ctx = createContext<NexusCtx | null>(null)
@@ -57,6 +70,7 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
   const [activeSideFilter, setActiveSideFilter]   = useState('All Sides')
   const [sidebarAgent, setSidebarAgent]           = useState<AgentName | null>(null)
   const [isInitializing, setIsInitializing]       = useState(true)
+  const [realBNBPrice, setRealBNBPrice]           = useState<number | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setIsInitializing(false), 1800)
@@ -64,9 +78,38 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // We run the orchestrator when the provider heavily mounts.
     const unsub = engine.subscribe(setState)
     engine.start()
-    return () => { engine.stop(); unsub() }
+
+    // Setup orchestrator to patch state directly
+    agentOrchestrator.startOrchestrator((action: string, payload: any) => {
+      // Handle patch actions 
+      if (action === 'patchPrice') {
+        engine.patchPrice(payload.pair, payload.price)
+        if (payload.pair === 'BNB/USDC') setRealBNBPrice(payload.price)
+      } else if (action === 'signals') {
+        engine.patchSignals(payload)
+      } else if (action === 'trade') {
+        engine.patchTrade(payload)
+      } else if (action === 'breach') {
+        engine.patchBreach(payload)
+      } else if (action === 'resetAll') {
+        engine.resetAll()
+      } else if (action === 'log') {
+        engine.patchActivity(payload)
+      } else if (action === 'agentState') {
+        engine.patchAgentState(payload)
+      } else if (action === 'regime') {
+        engine.patchRegime(payload)
+      }
+    })
+
+    return () => { 
+      engine.stop()
+      unsub() 
+      agentOrchestrator.stopOrchestrator()
+    }
   }, [])
 
   const toggleArmed = useCallback(() => setArmed(v => !v), [])
@@ -116,6 +159,17 @@ export function NexusProvider({ children }: { children: React.ReactNode }) {
       sendToStrategy,
       // Boot
       isInitializing,
+      demo: {
+        runDemoSequence: agentOrchestrator.runDemoSequence,
+        setAutoExecute: agentOrchestrator.setAutoExecute,
+        setSignalFrequency: agentOrchestrator.setSignalFrequency,
+        forceTrade: agentOrchestrator.forceTrade,
+        triggerBreach: agentOrchestrator.triggerBreachManual,
+        resetAll: agentOrchestrator.resetAll,
+        rearm: agentOrchestrator.rearm,
+        executeSignal: agentOrchestrator.executeSignal,
+      },
+      realBNBPrice,
     }}>
       {children}
     </Ctx.Provider>

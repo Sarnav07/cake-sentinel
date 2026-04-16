@@ -12,6 +12,7 @@ import ExecutionPage    from './pages/ExecutionPage'
 import RiskPage         from './pages/RiskPage'
 import PortfolioPage    from './pages/PortfolioPage'
 import LiquidityPage    from './pages/LiquidityPage'
+import DemoController   from './components/shared/DemoController'
 
 // ── Firewall Banner ────────────────────────────────────────────────────────────
 // Slides down from the top of every dashboard tab when isArmed = false
@@ -162,6 +163,7 @@ export default function App() {
       <BrowserRouter>
         <AppRoutes />
       </BrowserRouter>
+      <DemoController />
     </NexusProvider>
   )
 }

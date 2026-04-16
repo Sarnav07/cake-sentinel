@@ -14,6 +14,7 @@ export interface PriceState {
 export interface Trade {
   id: string; time: string; pair: string; side: 'BUY' | 'SELL'
   size: string; entry: number; exit: number; gas: number; pnl: number; status: 'CONFIRMED' | 'FAILED'
+  simulated?: boolean
 }
 
 export interface Pool {
@@ -339,6 +340,7 @@ export class MockDataEngine {
         entry, exit: entry + pnl * 0.8,
         gas: parseFloat((0.001 + Math.random() * 0.005).toFixed(4)),
         pnl, status: Math.random() > 0.1 ? 'CONFIRMED' : 'FAILED',
+        simulated: false,
       }
     })
   }
@@ -383,6 +385,7 @@ export class MockDataEngine {
       entry, exit: entry + pnl * 0.8,
       gas: parseFloat((0.001 + Math.random() * 0.005).toFixed(4)),
       pnl, status: Math.random() > 0.05 ? 'CONFIRMED' : 'FAILED',
+      simulated: false,
     }
 
     const s = this.state.pnl
@@ -678,6 +681,108 @@ export class MockDataEngine {
 
   // get previous pool APRs for flash detection in UI
   getPrevAprs(): Record<string, number> { return { ...this._prevPoolAprs } }
+
+  // ── Orchestrator Patch Methods ──────────────────────────────────────────────
+  patchPrice(pair: string, price: number) {
+    if (!this.state.prices[pair]) return
+    const prev = this.state.prices[pair].price
+    const change = price - prev
+    const pct = prev > 0 ? (change / prev) * 100 : 0
+    this.state = {
+      ...this.state,
+      prices: {
+        ...this.state.prices,
+        [pair]: { price, prev, change, changePercent: pct }
+      }
+    }
+    this._emit()
+  }
+
+  patchSignals(signals: any[]) {
+    this.state = { ...this.state, signals }
+    this._emit()
+  }
+
+  patchTrade(trade: any) {
+    // We unshift to trades array and update PnL
+    const newTrades = [trade, ...this.state.trades].slice(0, 50)
+    const isWin = trade.netPnL > 0
+    const s = this.state.pnl
+    const newTradeCount = s.tradeCount + 1
+    const newWinCount = isWin ? s.winCount + 1 : s.winCount
+    
+    this.state = {
+      ...this.state,
+      trades: newTrades,
+      pnl: {
+        total: s.total + trade.netPnL,
+        today: s.today + trade.netPnL,
+        winRate: (newWinCount / newTradeCount) * 100,
+        activeCount: s.activeCount,
+        winCount: newWinCount,
+        tradeCount: newTradeCount
+      }
+    }
+    this._emit()
+  }
+
+  patchBreach(breach: any) {
+    this.state = { ...this.state, breachAlert: breach }
+    this._emit()
+  }
+
+  resetAll() {
+    this.state = {
+      ...this.state,
+      trades: [],
+      pnl: { total: 0, today: 0, winRate: 0, activeCount: 0, winCount: 0, tradeCount: 0 },
+      breachAlert: null,
+      activity: []
+    }
+    this._emit()
+  }
+
+  patchActivity(payload: any) {
+    const act: ActivityEntry = {
+      id: `ACT-${Date.now()}-${Math.random()}`,
+      ts: new Date(payload.timestamp).toLocaleTimeString('en-US', { hour12: false }),
+      agent: payload.agent as AgentName,
+      message: payload.message,
+    }
+    this.state = {
+      ...this.state,
+      activity: [act, ...this.state.activity].slice(0, 50)
+    }
+    this._emit()
+  }
+
+  patchAgentState(agentState: any) {
+    // Merge agent state
+    const agents = this.state.agents.map(a => {
+      let active = a.active
+      if (a.name === 'Market Intel' && agentState.marketIntel === 'ONLINE') active = true
+      // add logic mapping if needed, simplified for demo
+      return { ...a, active }
+    })
+    this.state = { ...this.state, agents }
+    this._emit()
+  }
+
+  patchRegime(regimeLabel: string) {
+    if (this.state.marketRegime.current === regimeLabel) return
+    const now = nowStr()
+    const entry: RegimeHistoryEntry = {
+      regime: this.state.marketRegime.current,
+      timestamp: this.state.marketRegime.updatedAt,
+      duration: '1m+' // simplified
+    }
+    this.state = {
+      ...this.state,
+      marketRegime: { current: regimeLabel as RegimeLabel, confidence: 95, updatedAt: now },
+      regimeHistory: [entry, ...this.state.regimeHistory].slice(0, 5)
+    }
+    this._emit()
+  }
 
   private _tickEquity() {
     const last  = this.state.equityCurve[this.state.equityCurve.length - 1]
