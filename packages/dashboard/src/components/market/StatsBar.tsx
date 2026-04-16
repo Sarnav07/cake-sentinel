@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 import { useLivePnL, useNexus } from '../../context/NexusContext'
 import SkeletonLoader from '../ui/SkeletonLoader'
+import MonoValue from '../ui/MonoValue'
 
 const spark = (seed: number, len = 12) =>
   Array.from({ length: len }, (_, i) => ({ v: 50 + Math.sin((i + seed) / 2) * 30 + Math.random() * 10 }))
@@ -85,12 +86,7 @@ export default function StatsBar() {
             >
               {s.label}
             </p>
-            <p
-              className="text-[28px] font-bold leading-none"
-              style={{ color: s.color, fontFamily: 'var(--font-mono)' }}
-            >
-              {s.value}
-            </p>
+            <MonoValue value={s.value} color={s.color} size="xl" flash={true} className="leading-none" />
           </div>
         </motion.div>
       ))}

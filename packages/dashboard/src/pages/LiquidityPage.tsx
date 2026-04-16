@@ -60,7 +60,7 @@ function PoolHealthBar({ pools }: { pools: Pool[] }) {
       </GlowCard>
       <GlowCard className="p-4" delay={0.3}>
         <p className="text-[10px] uppercase tracking-[0.25em] mb-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Avg Fee APR</p>
-        <MonoValue value={`${avgApr.toFixed(1)}%`} color={APR_COLOR(avgApr)} size="xl" />
+        <MonoValue value={`${avgApr.toFixed(1)}%`} color={APR_COLOR(avgApr)} size="xl" flash={true} />
       </GlowCard>
     </div>
   )

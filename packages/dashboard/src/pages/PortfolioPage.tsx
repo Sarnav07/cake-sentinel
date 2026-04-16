@@ -191,7 +191,7 @@ export default function PortfolioPage() {
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Total Return</p>
           <MonoValue
             value={`${displayTotal >= 0 ? '+' : ''}$${Math.abs(displayTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            color={displayTotal >= 0 ? 'var(--green)' : 'var(--red)'} size="xl" />
+            color={displayTotal >= 0 ? 'var(--green)' : 'var(--red)'} size="xl" flash={true} />
           <p className="text-[10px] mt-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
             {pnl.tradeCount} total trades
           </p>
@@ -203,7 +203,7 @@ export default function PortfolioPage() {
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Win Rate</p>
           <div className="flex items-center gap-3">
             <WinDonut value={displayWinRate} />
-            <MonoValue value={`${displayWinRate.toFixed(1)}%`} color="var(--cyan)" size="xl" />
+            <MonoValue value={`${displayWinRate.toFixed(1)}%`} color="var(--cyan)" size="xl" flash={true} />
           </div>
         </GlowCard>
 
@@ -213,7 +213,7 @@ export default function PortfolioPage() {
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Avg Profit / Trade</p>
           <MonoValue
             value={`${displayAvg >= 0 ? '+' : ''}$${Math.abs(displayAvg).toFixed(2)}`}
-            color="var(--text-primary)" size="xl" />
+            color="var(--text-primary)" size="xl" flash={true} />
           <p className="text-[10px] mt-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
             computed live
           </p>
@@ -223,7 +223,7 @@ export default function PortfolioPage() {
         <GlowCard delay={0.4} className="p-5">
           <p className="text-[10px] uppercase tracking-[0.25em] mb-3"
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Gas Efficiency</p>
-          <MonoValue value={`${displayGas.toFixed(1)}%`} color="var(--amber)" size="xl" />
+          <MonoValue value={`${displayGas.toFixed(1)}%`} color="var(--amber)" size="xl" flash={true} />
           <div className="mt-3 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <motion.div layout className="h-full rounded-full transition-all duration-700"
               style={{ width: `${displayGas}%`, background: 'var(--amber)', boxShadow: '0 0 6px rgba(245,158,11,0.5)' }} />
